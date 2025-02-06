@@ -8,7 +8,7 @@ import { clearCart } from "@/redux/reducers/cartSlice.js";
 import { clearChatData } from "@/redux/reducers/helperSlice.js";
 import { clearUserData, getUserData } from "@/redux/reducers/userDataSlice";
 import FirebaseData from "@/utils/Firebase.js";
-import { placeholderImage, useRTL } from "@/utils/Helper";
+import { isDemoMode, placeholderImage, useRTL } from "@/utils/Helper";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -28,6 +28,7 @@ import EditProfileModal from "../../auth/EditProfile.jsx";
 const SideNavigation = () => {
   const t = useTranslation();
   const isRTL = useRTL();
+  const isDemo = isDemoMode();
   const router = useRouter();
   const dispatch = useDispatch();
   const [openProfileModal, setOpenProfileModal] = useState(false);
@@ -121,6 +122,11 @@ const SideNavigation = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (isDemo) {
+      toast.error(t("actionNotAllowedInDemo"));
+      setOpenDeleteAccDialog(false);
+      return;
+    }
     try {
       const firebaseUser = authentication.currentUser;
 

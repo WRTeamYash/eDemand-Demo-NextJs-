@@ -495,3 +495,11 @@ export const handleFirebaseAuthError = (t, errorCode) => {
   // Optionally, you can add additional logic here to handle the error
   // For example, display an error message to the user, redirect to an error page, etc.
 };
+
+
+// is demo mode 
+export const isDemoMode = () => {
+ const systemSettings = store.getState().settingsData.settings?.general_settings;
+ const isDemo = systemSettings?.demo_mode === "1";
+ return isDemo;
+}

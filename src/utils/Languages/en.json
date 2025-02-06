@@ -455,5 +455,6 @@
   "copyURL": "Copy URL",
   "copiedToClipboard": "Copied to clipboard!",
   "noCategoriesFound": "No categories found",
-  "noCategoriesFoundText": "Categories have not been added yet. Please contact the admin to add categories for better shipment and delivery management."
+  "noCategoriesFoundText": "Categories have not been added yet. Please contact the admin to add categories for better shipment and delivery management.",
+  "actionNotAllowedInDemo": "Action not allowed in demo mode"
 }

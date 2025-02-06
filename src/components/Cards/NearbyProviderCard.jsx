@@ -2,7 +2,7 @@
 import { miniDevider, placeholderImage, useRTL } from "@/utils/Helper";
 import Link from "next/link";
 import { BsBookmarkCheckFill } from "react-icons/bs";
-import { FaStar, FaMapMarkerAlt, FaBookmark } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import { FaAngleRight } from "react-icons/fa6";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import { useTranslation } from "../Layout/TranslationContext";
@@ -53,9 +53,12 @@ const NearbyProviderCard = ({ provider, isBookmark, handleRemoveBookMark }) => {
                       provider?.total_services.toString().padStart(2, "0")}{" "}
                     {t("services")}
                   </span>
-                  {miniDevider}
+                
                 </>
               )}
+               {provider?.total_services > 0 && provider?.discount > 0
+              ? miniDevider
+              : null}
               {provider?.discount > 0 && (
                 <div className="flex items-center text-green-600 font-semibold">
                   <span className="text-xs bg-green-100 px-1 py-0.5 rounded-full mr-1 flower flex items-center justify-center mx-auto">
@@ -77,17 +80,18 @@ const NearbyProviderCard = ({ provider, isBookmark, handleRemoveBookMark }) => {
           <div className="flex items-center space-x-4">
             {/* Rating */}
             {provider?.number_of_ratings > 0 && (
-              <>
-                <div className="flex items-center">
-                  <FaStar className="text-yellow-500 mr-1" />
-                  <span className="font-semibold">
-                    {provider?.number_of_ratings}
-                  </span>
-                </div>
-                {/* Vertical Divider */}
-                <div className="border-l h-5 mx-2"></div>
-              </>
+              <div className="flex items-center">
+                <FaStar className="text-yellow-500 mr-1" />
+                <span className="font-semibold">
+                  {provider?.number_of_ratings}
+                </span>
+              </div>
             )}
+
+            {/* Show miniDevider only if both rating and distance exist */}
+            {provider?.number_of_ratings > 0 && provider?.distance > 0
+              ? miniDevider
+              : null}
 
             {/* Distance */}
             {provider?.distance > 0 && (

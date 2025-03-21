@@ -34,18 +34,12 @@ const HomeCategoryCard = ({ data, handleRouteCategory }) => {
     >
       {/* Icon/Image Container */}
       <div
-        className="primary_bg_color h-[54px] w-[54px] rounded-full flex items-center justify-center border border_color group-hover:scale-125 transition-transform duration-500"
-        style={{
-          boxShadow: `0px 8px 12px 0px ${rgbPrimaryColor}`,
-        }}
+        className="h-[54px] w-[54px] rounded-full flex items-center justify-center"
       >
         <CustomImageTag
           src={data?.category_image}
           alt={data?.name}
-          width={0}
-          height={0}
-          className="w-8 h-8 rounded-full transform transition-transform duration-200 hover:scale-110"
-          onError={placeholderImage}
+          className="w-full h-full rounded-full"
         />
       </div>
 

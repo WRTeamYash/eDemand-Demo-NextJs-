@@ -44,7 +44,7 @@ const Banner = ({ banner }) => {
 
   return (
     <div
-      className="h-[130px] md:h-[400px] w-full cursor-pointer bg-transparent"
+      className="h-[130px] md:h-[400px] w-full cursor-pointer bg-transparent container mx-auto"
       onClick={(e) => handleRouteBanner(e, bannerData)}
     >
       <CustomImageTag

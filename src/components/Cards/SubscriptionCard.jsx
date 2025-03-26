@@ -36,7 +36,7 @@ const SubscriptionCard = ({ ele }) => {
       </div>
 
       {/* Price and Duration */}
-      <div className="flex items-center justify-start gap-4">
+      <div className="flex items-center flex-wrap justify-start gap-4">
         {/* Price and Discount */}
         <div className="flex items-center justify-start gap-4">
           <div>

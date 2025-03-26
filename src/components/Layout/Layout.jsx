@@ -29,6 +29,7 @@ const Layout = ({ children }) => {
   const isProviderPage = pathname === "/providers";
   const isServicePage = pathname === "/services";
   const isProfilePage = pathname === "/profile";
+  const isBecomeProviderPage = pathname === "/become-provider";
 
   const isMobile = window.innerWidth <= 768;
   const isTabletOrDesktop = window.innerWidth > 768;
@@ -130,9 +131,9 @@ const Layout = ({ children }) => {
   const shouldShowFooter = () => {
     // Always show footer on tablet and desktop
     if (isTabletOrDesktop) return true;
-    
+
     // On mobile, only show footer on home page
-    return isMobile && isHomePage;
+    return isMobile && isHomePage && isBecomeProviderPage;
   };
 
   if (isLoading) {
@@ -156,9 +157,9 @@ const Layout = ({ children }) => {
           <Header />
           {children}
           {shouldShowFooter() && <Footer />}
-          <div className="my-20 block md:hidden"></div>
           {ShowBottomNavigation() && (
             <>
+              <div className="my-20 block md:hidden"></div>
               <BottomNavigation />
             </>
           )}

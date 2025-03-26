@@ -1,6 +1,4 @@
 "use client";
-import DarkLogo from "@/assets/footer.png";
-import LightLogo from "@/assets/header_logo.png";
 import {
   Sheet,
   SheetClose,
@@ -9,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaChevronRight, FaShoppingCart } from "react-icons/fa";
 import { getCartApi } from "@/api/apiRoutes";
 import {
   clearCart,
@@ -20,6 +18,7 @@ import { clearUserData, getUserData } from "@/redux/reducers/userDataSlice";
 import {
   isLogin,
   placeholderImage,
+  setLanguage,
   useIsDarkMode,
   useRTL,
 } from "@/utils/Helper";
@@ -47,6 +46,16 @@ import { FaRegCalendarCheck } from "react-icons/fa";
 import { MdNotificationsNone } from "react-icons/md";
 import LogoutDialog from "../ReUseableComponents/Dialogs/LogoutDialog";
 import FirebaseData from "@/utils/Firebase";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useTheme } from "next-themes";
+import config from "@/utils/Langconfig";
+import { setTheme } from "@/redux/reducers/themeSlice";
 
 const Header = () => {
   const t = useTranslation();
@@ -56,6 +65,8 @@ const Header = () => {
   const dispatch = useDispatch();
   const { signOut } = FirebaseData();
   const userData = useSelector(getUserData);
+  const settingsData = useSelector((state) => state?.settingsData);
+  const websettings = settingsData?.settings?.web_settings;
   const isLoggedIn = isLogin();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoginModalOpen, setLoginModalIsOpen] = useState(false);
@@ -64,6 +75,7 @@ const Header = () => {
   const [accountVisible, setAccountVisible] = useState(false);
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
   const [openProfileModal, setOpenProfileModal] = useState(false);
+
   const [dropdownStates, setDropdownStates] = useState({
     account: false,
   });
@@ -137,120 +149,156 @@ const Header = () => {
   };
 
   useEffect(() => {
-    if (isLoggedIn && !isReorder) {
+    if (isLoggedIn && !isReorder && !isCheckoutPage) {
       fetchCartDetails();
     }
-  }, [isLoggedIn, isReorder]);
+  }, [isLoggedIn, isReorder, isCheckoutPage]);
+
+  const [isOpenHam, setIsOpenHam] = useState(false);
+
+
+  // topHeader functions and states 
+
+  const [showMobileNav, setShowMobileNav] = useState(false)
+
+  const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme: setNextTheme } = useTheme();
+  const currentLanguage = useSelector(
+    (state) => state.translation.currentLanguage
+  );
+
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    currentLanguage.langCode
+  );
+
+  useEffect(() => {
+    document.documentElement.dir = currentLanguage.isRtl ? "rtl" : "ltr";
+  }, [currentLanguage.isRtl]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setNextTheme(newTheme);
+    dispatch(setTheme(newTheme));
+  };
+
+  const handleLanguageChange = (value) => {
+    const langObject = config.supportedLanguages.find(
+      (lang) => lang.langCode === value
+    );
+
+    setSelectedLanguage(value);
+    dispatch(setLanguage(langObject));
+    setIsOpen(false);
+  };
+
+  const getCurrentLanguageDisplay = () => {
+    const lang = config.supportedLanguages.find(
+      (lang) => lang.langCode === selectedLanguage
+    );
+    return lang?.language || "Select Language";
+  };
+
+  const handleMobileNav = () => {
+    setIsOpenHam(!isOpenHam)
+    setShowMobileNav(!showMobileNav)
+  }
+
 
   return (
-    <header className="w-full sticky top-0 z-50 card_bg dark:bg-gray-900 border-b border-[#21212114]">
+    <header className="w-full sticky top-0 z-50 card_bg dark:bg-gray-900 !border-b !border-[#21212114] shadow-[0px_15px_47px_0px_rgba(0,0,0,0.04)]">
       <div>
         {/* Top header */}
         <TopHeader />
 
         {/* Main header */}
-        <div className="py-4 px-4 flex justify-between items-center">
+        <div className={`fixed w-full card_bg border-b py-4 px-4 flex justify-between items-center flex-wrap md:flex-nowrap ${showMobileNav ? 'h-64' : 'h-16'} md:h-max transition-all duration-500 overflow-hidden`}>
           <div className="container mx-auto flex justify-between items-center">
-            <Link href="/" title={t("home")}>
+            <Link href="/" title={t("home")} className="relative">
               <CustomImageTag
-                width={0}
-                height={0}
-                src={!isDarkMode ? LightLogo.src : DarkLogo.src}
+                src={websettings?.web_logo}
                 alt="logo"
                 className="h-[40px] md:h-[60px] w-full"
-                onError={placeholderImage}
               />
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-6 text_color">
+            <nav className="hidden lg:flex gap-6 text_color">
               <Link
                 href="/"
-                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${
-                  pathName === "/" ? "primary_text_color" : ""
-                }`}
+                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${pathName === "/" ? "primary_text_color" : ""
+                  }`}
                 title={t("home")}
               >
                 {t("home")}
                 <span
-                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${
-                    pathName === "/" ? "w-3/4" : "w-0 group-hover:w-3/4"
-                  }`}
+                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${pathName === "/" ? "w-3/4" : "w-0 group-hover:w-3/4"
+                    }`}
                 ></span>
               </Link>
 
               <Link
-                href="/categories"
-                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${
-                  pathName === "/categories" ? "primary_text_color" : ""
-                }`}
-                title={t("categories")}
-              >
-                {t("categories")}
-                <span
-                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${
-                    pathName === "/categories"
-                      ? "w-3/4"
-                      : "w-0 group-hover:w-3/4"
+                href="/services"
+                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${pathName === "/services" ? "primary_text_color" : ""
                   }`}
+                title={t("services")}
+              >
+                {t("services")}
+                <span
+                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${pathName === "/services"
+                    ? "w-3/4"
+                    : "w-0 group-hover:w-3/4"
+                    }`}
                 ></span>
               </Link>
 
               <Link
                 href="/providers"
-                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${
-                  pathName === "/providers" ? "primary_text_color" : ""
-                }`}
+                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${pathName === "/providers" ? "primary_text_color" : ""
+                  }`}
                 title={t("providers")}
               >
                 {t("providers")}
                 <span
-                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${
-                    pathName === "/providers"
-                      ? "w-3/4"
-                      : "w-0 group-hover:w-3/4"
-                  }`}
+                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${pathName === "/providers"
+                    ? "w-3/4"
+                    : "w-0 group-hover:w-3/4"
+                    }`}
                 ></span>
               </Link>
 
               <Link
                 href="/about-us"
-                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${
-                  pathName === "/about-us" ? "primary_text_color" : ""
-                }`}
+                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${pathName === "/about-us" ? "primary_text_color" : ""
+                  }`}
                 title={t("aboutUs")}
               >
                 {t("aboutUs")}
                 <span
-                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${
-                    pathName === "/about-us" ? "w-3/4" : "w-0 group-hover:w-3/4"
-                  }`}
+                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${pathName === "/about-us" ? "w-3/4" : "w-0 group-hover:w-3/4"
+                    }`}
                 ></span>
               </Link>
 
               <Link
                 href="/contact-us"
-                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${
-                  pathName === "/contact-us" ? "primary_text_color" : ""
-                }`}
+                className={`relative group text-base font-normal hover:primary_text_color transition-colors ${pathName === "/contact-us" ? "primary_text_color" : ""
+                  }`}
                 title={t("contactUs")}
               >
                 {t("contactUs")}
                 <span
-                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${
-                    pathName === "/contact-us"
-                      ? "w-3/4"
-                      : "w-0 group-hover:w-3/4"
-                  }`}
+                  className={`absolute left-1/2 -bottom-1  h-0.5 primary_bg_color transition-all duration-300 ease-in-out transform -translate-x-1/2 ${pathName === "/contact-us"
+                    ? "w-3/4"
+                    : "w-0 group-hover:w-3/4"
+                    }`}
                 ></span>
               </Link>
             </nav>
 
             {isLoggedIn ? (
               <div
-                className={`hidden lg:flex items-center space-x-4 ${
-                  isRTL ? "space-x-reverse" : ""
-                }`}
+                className={`hidden lg:flex items-center space-x-4 ${isRTL ? "space-x-reverse" : ""
+                  }`}
               >
                 {/* Cart Dialog - Single Instance */}
                 {!isCheckoutPage && !isCartPage && (
@@ -282,10 +330,52 @@ const Header = () => {
               </div>
             )}
 
+            {/* Hamburger / Close Icon */}
+            <div className="flex items-center gap-4 md:hidden">
+              {isLoggedIn && !isCheckoutPage && !isCartPage && (
+                <Link href={'/cart'}>
+
+                  <div
+                    className="relative text-white primary_bg_color h-[36px] w-[36px] rounded-[8px] p-2 flex items-center justify-center cursor-pointer"
+                  >
+                    <FaShoppingCart
+                      size={18}
+                      className={`${isRTL ? "transform scale-x-[-1]" : ""}`}
+                    />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        {totalItems}
+                      </span>
+                    )}
+
+                  </div>
+                </Link>
+              )}
+
+              <button
+                className="relative w-6 h-5 flex flex-col justify-between md:hidden"
+                onClick={() => handleMobileNav()}
+              >
+                <span
+                  className={`block h-[2px] w-6 bg-black dark:bg-white rounded transition-transform duration-300 ${isOpenHam ? "rotate-45 translate-y-[8px]" : ""
+                    }`}
+                ></span>
+                <span
+                  className={`block h-[2px] w-6 bg-black dark:bg-white rounded transition-opacity duration-300 ${isOpenHam ? "opacity-0" : "opacity-100"
+                    }`}
+                ></span>
+                <span
+                  className={`block h-[2px] w-6 bg-black dark:bg-white rounded transition-transform duration-300 ${isOpenHam ? "-rotate-45 -translate-y-2.5" : ""
+                    }`}
+                ></span>
+              </button>
+            </div>
+
             {/* Mobile Navigation Toggle */}
-            <div className="lg:hidden flex items-center space-x-4">
-              {!isCheckoutPage && !isCartPage && (
-                <div className="relative">
+
+            <div className="hidden lg:hidden md:flex items-center space-x-4">
+              {isLoggedIn && !isCheckoutPage && !isCartPage && (
+                <div className={`relative ${isRTL ? "ml-2" : ""}`}>
                   <CartDialog
                     totalItems={totalItems}
                     isVisible={cartVisibleMobile}
@@ -306,17 +396,16 @@ const Header = () => {
                     <FaBars size={24} />
                   </button>
                 </SheetTrigger>
-
                 {/* Drawer Content - Opens from Right */}
                 <SheetContent className="w-[85%] sm:w-[350px] p-0">
                   <div className="flex flex-col h-full">
                     {/* Logo and Close Button */}
                     <div className="flex items-center justify-between p-4 border-b">
-                      <div className="w-32">
+                      <div className="w-32 h-24">
                         <CustomImageTag
-                          src={isDarkMode ? DarkLogo : LightLogo}
+                          src={websettings?.web_logo}
                           alt="Logo"
-                          className="w-full h-auto"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                       <SheetClose asChild>
@@ -331,11 +420,10 @@ const Header = () => {
                       <div className="flex flex-col">
                         <Link
                           href="/"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
                           title={t("home")}
                         >
                           <span>{t("home")}</span>
@@ -343,25 +431,23 @@ const Header = () => {
                         </Link>
 
                         <Link
-                          href="/categories"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/categories"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
-                          title={t("categories")}
+                          href="/services"
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/services"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
+                          title={t("services")}
                         >
-                          <span>{t("categories")}</span>
+                          <span>{t("services")}</span>
                           <span className="text-gray-400">›</span>
                         </Link>
 
                         <Link
                           href="/providers"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/providers"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/providers"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
                           title={t("providers")}
                         >
                           <span>{t("providers")}</span>
@@ -370,11 +456,10 @@ const Header = () => {
 
                         <Link
                           href="/about-us"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/about-us"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/about-us"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
                           title={t("aboutUs")}
                         >
                           <span>{t("aboutUs")}</span>
@@ -382,11 +467,10 @@ const Header = () => {
                         </Link>
                         <Link
                           href="/become-provider"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/become-provider"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/become-provider"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
                           title={t("becomeProvider")}
                         >
                           <span>{t("becomeProvider")}</span>
@@ -395,11 +479,10 @@ const Header = () => {
 
                         <Link
                           href="/contact-us"
-                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${
-                            pathName === "/contact-us"
-                              ? "light_bg_color !primary_text_color"
-                              : ""
-                          }`}
+                          className={`p-4 border-b description_color dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between ${pathName === "/contact-us"
+                            ? "light_bg_color !primary_text_color"
+                            : ""
+                            }`}
                           title={t("contactUs")}
                         >
                           <span>{t("contactUs")}</span>
@@ -442,9 +525,8 @@ const Header = () => {
                                   </div>
                                 </div>
                                 <span
-                                  className={`transform transition-transform ${
-                                    dropdownStates.account ? "rotate-90" : ""
-                                  }`}
+                                  className={`transform transition-transform ${dropdownStates.account ? "rotate-90" : ""
+                                    }`}
                                 >
                                   ›
                                 </span>
@@ -453,11 +535,10 @@ const Header = () => {
                                 <div className="bg-gray-50 dark:bg-gray-800">
                                   <Link
                                     href="/general-bookings"
-                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/general-bookings"
-                                        ? "light_bg_color !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/general-bookings"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -475,11 +556,10 @@ const Header = () => {
 
                                   <button
                                     onClick={() => router.push("/chats")}
-                                    className={`w-full flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/chats"
-                                        ? "light_bg_color !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`w-full flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/chats"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -497,11 +577,10 @@ const Header = () => {
 
                                   <Link
                                     href="/notifications"
-                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/notifications"
-                                        ? "light_bg_color  !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/notifications"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -519,11 +598,10 @@ const Header = () => {
 
                                   <Link
                                     href="/bookmarks"
-                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/bookmarks"
-                                        ? "light_bg_color   !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/bookmarks"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -541,11 +619,10 @@ const Header = () => {
 
                                   <Link
                                     href="/addresses"
-                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/addresses"
-                                        ? "light_bg_color !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/addresses"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -563,11 +640,10 @@ const Header = () => {
 
                                   <Link
                                     href="/payment-history"
-                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                      pathName === "/payment-history"
-                                        ? "light_bg_color !primary_text_color"
-                                        : ""
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 pl-8 description_color dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${pathName === "/payment-history"
+                                      ? "light_bg_color !primary_text_color"
+                                      : ""
+                                      }`}
                                   >
                                     <span
                                       className={
@@ -614,7 +690,67 @@ const Header = () => {
                 </SheetContent>
               </Sheet>
             </div>
+
           </div>
+
+          <div className="flex flex-col gap-6 w-full text-sm pt-4 md:hidden text-black dark:text-white">
+            <Link href={'/about-us'} title={t("aboutUs")}>
+              {t("aboutUs")}
+            </Link>
+            <Link href={'/contact-us'} title={t("contactUs")}>
+              {t("contactUs")}
+            </Link>
+            <div>
+              <Select
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                value={selectedLanguage}
+                onValueChange={handleLanguageChange}
+              >
+                <SelectTrigger
+                  className="p-0 flex items-center justify-between bg-transparent w-full [&>svg]:hidden border-none focus:outline-none focus:!ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto focus:ring-offset-0"
+                  onClick={() => setIsOpen(true)}
+                >
+                  <SelectValue>{getCurrentLanguageDisplay()}</SelectValue>
+                  <FaChevronRight className="text-gray-400 !block rtl:rotate-180" />
+                </SelectTrigger>
+                <SelectContent
+                  className="z-[9999]"
+                  onPointerDownOutside={() => setIsOpen(false)}
+                >
+                  {config.supportedLanguages.map((lang) => (
+                    <SelectItem
+                      key={lang.langCode}
+                      value={lang.langCode}
+                      className="cursor-pointer hover:bg-gray-100 hover:text-gray-900"
+                    >
+                      {lang.language}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>{t("darkMode")}</span>
+              <div className="flex items-center space-x-2 rtl:space-x-reverse ">
+
+                <button
+                  onClick={toggleTheme}
+                  className="w-9 h-4 bg-[#00000036] dark:bg-white rounded-full p-1 flex items-center justify-between cursor-pointer relative"
+                >
+                  <div
+                    className={`w-3 h-3 bg-white dark:primary_bg_color rounded-full shadow-md transform transition-transform absolute ${theme === "dark"
+                      ? "rtl:-translate-x-6 ltr:translate-x-4"
+                      : "translate-x-0"
+                      }`}
+                  ></div>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+
         </div>
       </div>
       {isLoginModalOpen && (
@@ -644,3 +780,5 @@ const Header = () => {
 };
 
 export default Header;
+
+

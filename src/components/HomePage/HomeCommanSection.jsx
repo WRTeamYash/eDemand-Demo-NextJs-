@@ -3,7 +3,7 @@ import React from "react";
 import CommanHeadline from "../ReUseableComponents/CommanHeadline";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import { Autoplay, FreeMode } from "swiper/modules";
+import { Autoplay, FreeMode, Pagination } from "swiper/modules";
 import BlurredServiceCard from "../Cards/BlurredServiceCard";
 import { addCategory } from "@/redux/reducers/multiCategoriesSlice";
 import { useRouter } from "next/router";
@@ -25,7 +25,7 @@ const HomeCommanSection = ({ data }) => {
   const handleRouteCategory = (category) => {
     // Check if the category is already in selectedCategories
     const isCategorySelected = selectedCategories.some(
-      (cat) => cat.id === category.id
+      (cat) => cat.slug === category.slug
     );
 
     // If the category is not already selected, dispatch the action and route to it
@@ -34,16 +34,13 @@ const HomeCommanSection = ({ data }) => {
       dispatch(addCategory(category));
 
       // Navigate to the category details page
-      router.push(`/categories/${pathname}/${category.id}`);
+      router.push(`/services/${pathname}/${category.slug}`);
     }
   };
 
   const breakpoints = {
     320: {
-      slidesPerView: 1,
-    },
-    375: {
-      slidesPerView: 2,
+      slidesPerView: 1.5,
     },
     576: {
       slidesPerView: 3,
@@ -67,7 +64,7 @@ const HomeCommanSection = ({ data }) => {
 
   return (
     <div className="py-8">
-      <div className="container mx-auto px-4 md:px-8">
+      <div className="container mx-auto px-4 md:px-8 homeCommanSection">
         <CommanHeadline
           headline={data?.title}
           subHeadline={data?.description}
@@ -75,7 +72,7 @@ const HomeCommanSection = ({ data }) => {
         />
         <div>
           <Swiper
-            modules={[Autoplay, FreeMode]} // Include FreeMode module
+            modules={[Autoplay, FreeMode,Pagination]} // Include FreeMode module
             spaceBetween={30}
             loop={true}
             key={isRTL}
@@ -83,6 +80,10 @@ const HomeCommanSection = ({ data }) => {
             autoplay={{ delay: 3000 }} // Autoplay functionality
             freeMode={true} // Enable free mode
             breakpoints={breakpoints} // Add breakpoints here
+            navigation
+            pagination={{
+              clickable: true,
+            }}
             className="mySwiper"
           >
             {data?.sub_categories.map((service) => (

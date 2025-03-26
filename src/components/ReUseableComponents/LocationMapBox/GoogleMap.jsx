@@ -1,18 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { GoogleMap, MarkerF, Autocomplete } from "@react-google-maps/api";
+import { GoogleMap, MarkerF } from "@react-google-maps/api";
 import { FaSearch } from "react-icons/fa";
 import { cn } from "@/lib/utils";
+import { IoLocationOutline } from "react-icons/io5";
 import { useTranslation } from "@/components/Layout/TranslationContext";
+import { getPlacesDetailsForWebApi, getPlacesForWebApi } from "@/api/apiRoutes";
+import { darkThemeStyles, useIsDarkMode } from "@/utils/Helper";
 
-// Define the map container style
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
-// Default position of the marker (can be updated later)
-const defaultPosition = { lat: 40.748817, lng: -73.985428 }; // Example: New York City
+const containerStyle = { width: "100%", height: "100%" };
 
 const Map = ({
   latitude,
@@ -20,117 +16,184 @@ const Map = ({
   isLoaded,
   loadError,
   isClicked,
-  onLocationChange, // Function to update the selected location address
+  onLocationChange,
 }) => {
+  // ✅ All hooks must be called first, before any return
   const t = useTranslation();
+  const isDarkMode = useIsDarkMode();
 
-
-  const [markerPosition, setMarkerPosition] = useState(defaultPosition);
-  const [map, setMap] = useState(null); // Store the map instance
+  const [isLoading, setIsLoading] = useState(false);
+  const [markerPosition, setMarkerPosition] = useState({});
+  const [map, setMap] = useState(null);
   const [zoom, setZoom] = useState(14);
-  const autocompleteRef = useRef(null); // Reference for the autocomplete input
-  const geocoder = new window.google.maps.Geocoder(); // Geocoder instance for reverse geocoding
 
-  // Set initial marker position when latitude/longitude props change
+  const [searchInput, setSearchInput] = useState("");
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  const inputRef = useRef(null);
+  const geocoder = new window.google.maps.Geocoder();
+
+  // ✅ Move useEffect BEFORE any return statements
   useEffect(() => {
-    if (latitude && longitude) {
-      setMarkerPosition({
-        lat: parseFloat(latitude),
-        lng: parseFloat(longitude),
-      });
-    }
+    const initialLat = latitude ? parseFloat(latitude) : 23.2387;
+    const initialLng = longitude ? parseFloat(longitude) : 69.67;
+
+    setMarkerPosition({ lat: initialLat, lng: initialLng });
+    reverseGeocode(initialLat, initialLng);
   }, [latitude, longitude]);
 
-  // Function to handle geocoding (reverse lookup from lat/lon)
-  const geocodeLatLng = (lat, lng) => {
+  // ✅ More hooks before any return
+  useEffect(() => {
+    if (!searchInput.trim()) {
+      setPlaceSuggestions([]);
+      setActiveIndex(-1);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      setIsLoading(true);
+      try {
+        const res = await getPlacesForWebApi({ input: searchInput });
+        setPlaceSuggestions(res?.data?.data?.predictions || []);
+        setActiveIndex(-1);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const debounce = setTimeout(fetchSuggestions, 500);
+    return () => clearTimeout(debounce);
+  }, [searchInput]);
+
+  // ✅ Now return statements come AFTER hooks
+  if (loadError) return <div>Error loading Google Maps</div>;
+  if (!isLoaded) return <div>Loading...</div>;
+
+  const reverseGeocode = (lat, lng) => {
     const latLng = new window.google.maps.LatLng(lat, lng);
     geocoder.geocode({ location: latLng }, (results, status) => {
       if (status === "OK" && results.length > 0) {
-        // Find the first valid formatted_address
-        const address =
-          results.find((result) => result.formatted_address)
-            ?.formatted_address || "Address not found";
-        const fullAddress = {
-          lat: lat,
-          lng: lng,
-          address: address,
-        };
-        onLocationChange(fullAddress); // Pass the address back to the parent component
-      } else {
-        console.error("Geocode failed due to: " + status);
+        const address = results[0]?.formatted_address || "Address not found";
+        const city =
+          results[0]?.address_components.find((c) =>
+            c.types.includes("locality")
+          )?.long_name || "City not found";
+
+        onLocationChange({ lat, lng, address, city });
       }
     });
   };
-  // Handle marker drag end event
+
   const handleMarkerDragEnd = (e) => {
-    const newLat = e.latLng.lat(); // Get latitude after drag
-    const newLng = e.latLng.lng(); // Get longitude after drag
-
-    // Update the marker position state
+    const newLat = e.latLng.lat();
+    const newLng = e.latLng.lng();
     setMarkerPosition({ lat: newLat, lng: newLng });
-
-    // Get the address for the new position
-    geocodeLatLng(newLat, newLng);
+    reverseGeocode(newLat, newLng);
   };
 
-  // Handle place selection from autocomplete
-  const handlePlaceSelect = () => {
-    const place = autocompleteRef.current.getPlace();
-    if (place && place.geometry) {
-      const newLat = place.geometry.location.lat();
-      const newLng = place.geometry.location.lng();
+  const handlePlaceSelect = async (place) => {
+    try {
+      const placeDetailsRes = await getPlacesDetailsForWebApi({
+        place_id: place?.place_id,
+      });
+      const placeDetails = placeDetailsRes?.data?.data?.results?.[0];
 
-      // Update the marker position
-      setMarkerPosition({ lat: newLat, lng: newLng });
-      setZoom(18);
-
-      // Center the map to the selected place
-      if (map) {
-        map.panTo({ lat: newLat, lng: newLng });
+      if (!placeDetails) {
+        console.error("No place details found");
+        return;
       }
 
-      // Get the address for the selected place
-      geocodeLatLng(newLat, newLng);
+      const lat = placeDetails.geometry?.location?.lat;
+      const lng = placeDetails.geometry?.location?.lng;
+
+      if (lat && lng) {
+        setMarkerPosition({ lat, lng });
+        setZoom(18);
+
+        if (map) map.panTo({ lat, lng });
+
+        onLocationChange({
+          lat,
+          lng,
+          address: placeDetails.formatted_address,
+          city:
+            placeDetails.address_components.find((c) =>
+              c.types.includes("locality")
+            )?.long_name || "City not found",
+        });
+
+        setSearchInput("");
+        setPlaceSuggestions([]);
+        setActiveIndex(-1);
+        inputRef.current?.blur();
+        setIsInputFocused(false);
+      }
+    } catch (error) {
+      console.error("Failed to fetch place details:", error);
     }
   };
 
-  // Error or loading states
-  if (loadError) {
-    return <div>Error loading Google Maps</div>;
-  }
+  const handleKeyDown = (e) => {
+    if (placeSuggestions.length === 0) return;
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
+    if (e.key === "ArrowDown") {
+      setActiveIndex((prev) =>
+        prev < placeSuggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === "ArrowUp") {
+      setActiveIndex((prev) =>
+        prev > 0 ? prev - 1 : placeSuggestions.length - 1
+      );
+    } else if (e.key === "Enter" && activeIndex !== -1) {
+      handlePlaceSelect(placeSuggestions[activeIndex]);
+    }
+  };
 
   return (
     <div className="relative w-full h-full">
-      {/* Autocomplete Search Input */}
       <div
         className={cn("absolute z-10 w-full p-4 transition-all duration-700", {
           "top-0 opacity-100": isClicked,
           "-top-16 opacity-0": !isClicked,
         })}
       >
-        <Autocomplete
-          onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-          onPlaceChanged={handlePlaceSelect}
-        >
-          <div className="flex items-center gap-3 card_bg p-2 w-full border rounded-xl">
-            <FaSearch />
-            <input
-              type="text"
-              placeholder={t("searchPlace")}
-              className="bg-transparent focus:outline-none w-full"
-            />
+        <div className="relative flex items-center gap-3 card_bg p-2 w-full border rounded-xl">
+          <FaSearch />
+          <input
+            ref={inputRef}
+            className="ml-2 focus:outline-none w-full text-sm sm:text-base bg-transparent"
+            placeholder={t("enterLocation")}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setTimeout(() => setIsInputFocused(false), 200)}
+          />
+        </div>
+
+        {isInputFocused && placeSuggestions.length > 0 && (
+          <div className="absolute z-10 w-full top-14 card_bg rounded-b-xl shadow-lg max-h-60 overflow-y-auto primary_text_color">
+            {placeSuggestions.map((place, index) => (
+              <div
+                key={place.place_id}
+                className={`cursor-pointer p-2 flex items-center gap-3 border-b border-dashed last:border-none ${
+                  index === activeIndex ? "primary_bg_color text-white" : ""
+                }`}
+                onClick={() => handlePlaceSelect(place)}
+              >
+                <IoLocationOutline size={22} />
+                <span>{place.description}</span>
+              </div>
+            ))}
           </div>
-        </Autocomplete>
+        )}
       </div>
 
-      {/* Google Map */}
       <GoogleMap
         className="map_box w-full relative"
-        center={markerPosition} // Use current marker position
+        center={markerPosition}
         zoom={zoom}
         mapContainerStyle={containerStyle}
         options={{
@@ -138,13 +201,14 @@ const Map = ({
           mapTypeControl: false,
           streetViewControl: false,
           zoomControl: true,
+          styles: isDarkMode ? darkThemeStyles : [],
         }}
-        onLoad={(mapInstance) => setMap(mapInstance)} // Get map instance
+        onLoad={(mapInstance) => setMap(mapInstance)}
       >
         <MarkerF
-          position={markerPosition} // Set marker position
-          draggable={true} // Make marker draggable
-          onDragEnd={handleMarkerDragEnd} // Trigger when dragging ends
+          position={markerPosition}
+          draggable
+          onDragEnd={handleMarkerDragEnd}
         />
       </GoogleMap>
     </div>

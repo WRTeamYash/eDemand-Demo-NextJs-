@@ -1,7 +1,7 @@
 import React from "react";
-import { GoogleMap, Marker, MarkerF } from "@react-google-maps/api";
-import { t, useGoogleMapsLoader } from "@/utils/Helper";
-import { FaCheckCircle, FaEdit, FaTrashAlt } from "react-icons/fa";
+import { GoogleMap, MarkerF } from "@react-google-maps/api";
+import { darkThemeStyles, useGoogleMapsLoader, useIsDarkMode } from "@/utils/Helper";
+import { FaCheckCircle} from "react-icons/fa";
 
 const AddressCard = ({ data, onDelete, onEdit, t }) => {
 
@@ -17,6 +17,7 @@ const AddressCard = ({ data, onDelete, onEdit, t }) => {
     lat: Number(data?.lattitude) || 0, // Replace with actual lattitude
     lng: Number(data?.longitude) || 0, // Replace with actual longitude
   };
+  const isDarkMode = useIsDarkMode()
 
   return (
     <div
@@ -33,11 +34,10 @@ const AddressCard = ({ data, onDelete, onEdit, t }) => {
             center={defaultCenter}
             zoom={17}
             options={{
-              disableDefaultUI: true, // Hides all default controls
-              clickableIcons: false, // Disables POI clicks
-              gestureHandling: "none", // Prevents user interaction
-            
+              streetViewControl: false,
+              styles: isDarkMode ? darkThemeStyles : [],
             }}
+  
           >
             <MarkerF position={defaultCenter} />
           </GoogleMap>
@@ -63,8 +63,8 @@ const AddressCard = ({ data, onDelete, onEdit, t }) => {
       {/* Address Details */}
       <div className="mt-4 flex flex-col lg:flex-row  md:items-end justify-between gap-2">
         <div className="flex flex-col items-start justify-center w-full">
-          <span className="text-xl font-semibold">{data?.city_name} - {data?.type}</span>
-          <span className="text-sm description_color">{data?.area} {data?.address ? "," : ""} {data?.address}</span>
+          <span className="text-xl font-semibold">{data?.city_name || data?.city} - {data?.type}</span>
+          <span className="text-sm description_color break-all line-clamp-2">{data?.area} {data?.address ? "," : ""} {data?.address}</span>
         </div>
         <div className="w-full lg:w-1/3">
 

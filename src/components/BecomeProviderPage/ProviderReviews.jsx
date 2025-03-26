@@ -10,6 +10,7 @@ import ProviderReviewCard from "../Cards/ProviderReviewCard";
 import GetProviderApp from "./GetProviderApp";
 import { useTranslation } from "../Layout/TranslationContext";
 import { useRTL } from "@/utils/Helper";
+import { Skeleton } from "../ui/skeleton";
 
 const ProviderReviews = ({ data }) => {
   const swiperRef = useRef(null);
@@ -28,6 +29,7 @@ const ProviderReviews = ({ data }) => {
       swiperRef.current.slidePrev();
     }
   };
+
 
   return (
     <>

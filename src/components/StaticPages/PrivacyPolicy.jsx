@@ -4,6 +4,7 @@ import BreadCrumb from "../ReUseableComponents/BreadCrumb";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from 'react';
 import { useTranslation } from "../Layout/TranslationContext";
+import RichTextContent from '../ReUseableComponents/RichTextContent';
 
 const PrivacyPolicy = () => {
   const t = useTranslation();
@@ -26,7 +27,7 @@ const PrivacyPolicy = () => {
     <Layout>
       <BreadCrumb firstEle={t("privacyPolicy")} firstEleLink="/privacy-policy" />
       <section className="contact-us my-12 container mx-auto min-h-[50vh]">
-        <div dangerouslySetInnerHTML={{ __html: privacy_policy || "" }} />
+        <RichTextContent content={privacy_policy} />
       </section>
     </Layout>
   );

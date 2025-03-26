@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useGoogleMapsLoader, useRTL } from "@/utils/Helper";
-import Map from "../../PagesComponents/StaticPages/LocationMapBox/GoogleMap";
+import Map from "../LocationMapBox/GoogleMap.jsx";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
 import "swiper/css";
@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setDilveryDetails } from "@/redux/reducers/cartSlice";
 import { AddAddressApi } from "@/api/apiRoutes";
 import { useTranslation } from "@/components/Layout/TranslationContext";
+import MiniLoader from "../MiniLoader";
 
 const AddressDrawer = ({
   open,
@@ -26,13 +27,14 @@ const AddressDrawer = ({
   setAddresses,
   onUpdateAddress,
 }) => {
-  const t = useTranslation()
+  const t = useTranslation();
   const dispatch = useDispatch();
   const dilveryDetails = useSelector((state) => state.cart);
   const { isLoaded, loadError } = useGoogleMapsLoader();
   const isRTL = useRTL();
   const [isClicked, setIsClicked] = useState(false);
   const [activeAddress, setActiveAddress] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addressTypes = ["home", "office", "other"];
 
@@ -60,10 +62,30 @@ const AddressDrawer = ({
     is_default: defaultAddress?.is_default === "1" ? true : false,
   });
 
+
   const [mapCoordinates, setMapCoordinates] = useState({
     lat: defaultAddress?.lattitude ? Number(defaultAddress?.lattitude) : "",
     lng: defaultAddress?.longitude ? Number(defaultAddress?.longitude) : "",
   });
+
+  useEffect(() => {
+    if (defaultAddress) {
+      setFormValues({
+        id: defaultAddress.id || "",
+        address: defaultAddress.address || "",
+        area: defaultAddress.area || "",
+        city: defaultAddress.city_name || defaultAddress.city || "",
+        mobile: defaultAddress.mobile || "",
+        type: defaultAddress.type || "",
+        is_default: defaultAddress.is_default === "1",
+      });
+  
+      setMapCoordinates({
+        lat: defaultAddress.lattitude ? Number(defaultAddress.lattitude) : "",
+        lng: defaultAddress.longitude ? Number(defaultAddress.longitude) : "",
+      });
+    }
+  }, [defaultAddress]);
 
   const handleSelectAddress = (address) => {
     setActiveAddress(address);
@@ -74,7 +96,7 @@ const AddressDrawer = ({
         id: selectedAddress.id,
         address: selectedAddress.address,
         area: selectedAddress.area,
-        city: selectedAddress.city_name,
+        city: selectedAddress.city_name ,
         mobile: selectedAddress.mobile,
         type: selectedAddress.type,
         is_default: selectedAddress.is_default === "1" ? true : false,
@@ -194,6 +216,8 @@ const AddressDrawer = ({
       is_default: formValues.is_default ? "1" : "0",
     };
 
+    setIsLoading(true);
+
     try {
       const response = await AddAddressApi({
         id: newAddress.id ? newAddress.id : "",
@@ -208,34 +232,36 @@ const AddressDrawer = ({
       });
 
       if (response?.error === false) {
-        onUpdateAddress(newAddress);
+        const updatedAddress = response?.data;
+        
+        onUpdateAddress(updatedAddress);
         // Check if the address already exists by comparing the id
         setAddresses((prevAddresses) => {
           const existingAddress = prevAddresses.find(
-            (addr) => addr.id === newAddress.id
+            (addr) => addr.id === updatedAddress.id
           );
           if (existingAddress) {
             // If address exists, update it and move it to the top
             return [
-              newAddress,
-              ...prevAddresses.filter((addr) => addr.id !== newAddress.id),
+              updatedAddress,
+              ...prevAddresses.filter((addr) => addr.id !== updatedAddress.id),
             ];
           } else {
             // If address doesn't exist, add it to the top of the list
-            return [newAddress, ...prevAddresses];
+            return [updatedAddress, ...prevAddresses];
           }
         });
 
         // Set the new address as the default
-        setDefaultAddress(newAddress);
+        setDefaultAddress(updatedAddress);
 
         dispatch(
           setDilveryDetails({
             ...dilveryDetails, // Keep the existing delivery details
-            dilevryLocation: newAddress, // Update dilevryLocation with the new address
+            dilevryLocation: updatedAddress, // Update dilevryLocation with the new address
           })
         );
-
+        setIsLoading(false);
         // CLOSE THE DRAWER
         handleClose();
         toast.success(response?.message);
@@ -243,6 +269,7 @@ const AddressDrawer = ({
     } catch (error) {
       toast.error(error?.message);
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -259,7 +286,8 @@ const AddressDrawer = ({
         className={cn(
           "max-w-full lg:max-w-7xl mx-auto rounded-tr-[18px]",
           "max-h-full lg:max-h-fit overflow-y-auto lg:overflow-hidden",
-          "transition-all duration-300"
+          "transition-all duration-300",
+          "after:!content-none"
         )}
       >
         <div className="address w-full flex flex-col lg:flex-row gap-8 py-4 lg:py-16 px-4 lg:px-12 overflow-y-auto h-fit max-h-fit transition-all duration-300">
@@ -270,7 +298,7 @@ const AddressDrawer = ({
                 {isLoaded ? (
                   <>
                     <Map
-                      isClicked={isClicked}
+                      isClicked={true}
                       latitude={mapCoordinates?.lat}
                       longitude={mapCoordinates?.lng}
                       isLoaded={isLoaded}
@@ -289,7 +317,7 @@ const AddressDrawer = ({
           <div className="w-full flex flex-col gap-6">
             <div className="flex items-center justify-between w-full">
               <h2 className="text-2xl font-bold mb-4">
-                {isClicked ? "Add New Address" : "Select Address"}
+                {isClicked ? t("addNewAddress") : t("selectAddress")}
               </h2>
               <button
                 onClick={handleButtonClick}
@@ -337,7 +365,7 @@ const AddressDrawer = ({
                         )}
                       </div>
                       <div className="text-lg font-medium line-clamp-1">
-                        {address.city_name}
+                        {address.city_name || address.city}
                       </div>
                     </div>
                   </SwiperSlide>
@@ -376,7 +404,7 @@ const AddressDrawer = ({
                         : "background_color"
                     }`}
                   >
-                    {type}
+                    {t(type)}
                   </button>
                 ))}
               </div>
@@ -396,12 +424,18 @@ const AddressDrawer = ({
                 </label>
               </div>
               <div className="submit_address mt-2">
-                <button
-                  className="w-full primary_bg_color text-white p-4 rounded-xl text-base font-normal"
-                  onClick={handleSaveAddress}
-                >
-                  {t("continue")}
-                </button>
+                {isLoading ? (
+                  <button className="primary_bg_color primary_text_color py-3 px-8 rounded-xl w-full flex items-center justify-center">
+                    <MiniLoader />
+                  </button>
+                ) : (
+                  <button
+                    className="w-full primary_bg_color text-white p-4 rounded-xl text-base font-normal"
+                    onClick={handleSaveAddress}
+                  >
+                    {t("continue")}
+                  </button>
+                )}
               </div>
             </div>
           </div>

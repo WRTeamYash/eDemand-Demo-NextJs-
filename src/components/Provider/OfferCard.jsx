@@ -1,6 +1,4 @@
-import { placeholderImage } from "@/utils/Helper";
-import Image from "next/image";
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import { useTranslation } from "../Layout/TranslationContext";
 
@@ -51,10 +49,6 @@ const OfferCard = ({
           src={offer.image}
           alt={offer?.promo_code}
           className="w-full h-full rounded-md"
-          width={0}
-          height={0}
-          loading="lazy"
-          onError={placeholderImage}
         />
       </div>
 

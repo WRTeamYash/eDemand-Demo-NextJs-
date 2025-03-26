@@ -4,6 +4,7 @@ import BreadCrumb from '../ReUseableComponents/BreadCrumb'
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../Layout/TranslationContext';
+import RichTextContent from '../ReUseableComponents/RichTextContent';
 
 const TermsAndCondition = () => {
   const t = useTranslation();
@@ -27,7 +28,7 @@ const TermsAndCondition = () => {
     <Layout>
       <BreadCrumb firstEle={t("termsAndcondition")} firstEleLink="/terms-and-condition" />
       <section className="contact-us my-12 container mx-auto min-h-[50vh]">
-        <div dangerouslySetInnerHTML={{ __html: terms_conditions || "" }} />
+        <RichTextContent content={terms_conditions} />
       </section>
     </Layout>
   );

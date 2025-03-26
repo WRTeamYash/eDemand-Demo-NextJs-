@@ -1,5 +1,4 @@
-"use client"
-import Image from "next/image";
+"use client";
 import React from "react";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 
@@ -8,7 +7,7 @@ const NotificationCard = ({ data }) => {
     <div className="flex items-center justify-between border-b  last:border-b-0 pb-4 gap-4">
       {/* Image */}
       <div className="w-16 h-16 rounded overflow-hidden">
-      <CustomImageTag
+        <CustomImageTag
           src={data?.image}
           alt={data?.title}
           className="w-full h-full object-cover"

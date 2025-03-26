@@ -10,6 +10,7 @@ import MiniLoader from "@/components/ReUseableComponents/MiniLoader";
 import { FaPlus } from "react-icons/fa";
 import AddCustomServiceDialog from "@/components/ReUseableComponents/Dialogs/AddCustomServiceDialog";
 import { useTranslation } from "@/components/Layout/TranslationContext";
+import { isMobile } from "@/utils/Helper";
 const MyServiceRequest = () => {
   const t = useTranslation();
 
@@ -69,26 +70,27 @@ const MyServiceRequest = () => {
       <BreadCrumb
         firstEle={t("myServiceRequests")}
         firstEleLink="/my-services-requests"
+        isMobile={isMobile}
       />
-      <section className="profile_sec my-12">
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Grid layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-9">
               <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between w-full">
-                  <div className="page-headline text-2xl sm:text-3xl font-semibold">
+                <div className="flex items-center justify-between w-full max-[350px]:flex-wrap max-[350px]:gap-2">
+                  <div className="page-headline max-[350px]:text-base text-lg md:text-2xl sm:text-3xl font-semibold">
                     <span>{t("myServiceRequests")}</span>
                   </div>
                   <div>
                     <button
-                      className="flex items-center justify-center gap-2 primary_bg_color rounded-lg text-white py-2 px-3"
+                      className="flex items-center justify-center gap-2 primary_bg_color rounded-lg text-white py-2 px-2 md:px-3 text-sm md:text-base"
                       onClick={(e) => handleAddNewService(e)}
                     >
                       {" "}
@@ -112,8 +114,8 @@ const MyServiceRequest = () => {
                     // No Data Found Message
                     <div className="w-full h-[60vh] flex items-center justify-center">
                       <NoDataFound
-                        title={t("noBookings")}
-                        desc={t("noBookingText")}
+                        title={t("noMyServiceRequests")}
+                        desc={t("noMyServiceRequestsText")}
                       />
                     </div>
                   ) : (

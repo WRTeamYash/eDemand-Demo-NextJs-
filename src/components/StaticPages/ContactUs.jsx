@@ -11,16 +11,16 @@ import Layout from "../Layout/Layout";
 import BreadCrumb from "../ReUseableComponents/BreadCrumb";
 import { contactUsApi } from "@/api/apiRoutes";
 import { useTranslation } from "../Layout/TranslationContext";
+import { useIsDarkMode } from "@/utils/Helper";
 
 const ContactUs = () => {
   const t = useTranslation();
-
+  const isDarkMode = useIsDarkMode();
   const settingsData = useSelector((state) => state?.settingsData);
 
-  const websettings = settingsData?.settings?.web_settings;
   const general_settings = settingsData?.settings?.general_settings;
-  const mapSrc =
-    general_settings?.company_map_location?.match(/src="([^"]+)"/)[1];
+  const mapSrc = general_settings?.company_map_location;
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -55,7 +55,7 @@ const ContactUs = () => {
           subject: subject,
           message: message,
         });
-        toast.success(response?.message);
+        toast.success(t("messageSentSuccessfully"));
         setFormData({
           name: "",
           email: "",
@@ -70,7 +70,7 @@ const ContactUs = () => {
 
   return (
     <Layout>
-      <BreadCrumb firstEle="Contact Us" firstEleLink="/contact-us" />
+      <BreadCrumb firstEle={t("contactUs")} firstEleLink="/contact-us" />
       <section className="contact-us my-12 container mx-auto">
         <h2 className="text-3xl font-semibold mb-8">{t("contactUs")}</h2>
         <div className=" gap-12 flex flex-col-reverse lg:grid grid-cols-12">
@@ -80,7 +80,7 @@ const ContactUs = () => {
             <div className="grid grid-cols-1">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* Phone */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 gap-2">
                   <FaPhoneAlt
                     className="primary_text_color light_bg_color p-2 rounded-full"
                     size={36}
@@ -96,7 +96,7 @@ const ContactUs = () => {
                 </div>
 
                 {/* Email */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 gap-2">
                   <FaEnvelope
                     className="primary_text_color light_bg_color p-2 rounded-full"
                     size={36}
@@ -112,7 +112,7 @@ const ContactUs = () => {
                 </div>
 
                 {/* Opening Hours */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 gap-2">
                   <FaClock
                     className="primary_text_color light_bg_color p-2 rounded-full"
                     size={36}
@@ -129,7 +129,7 @@ const ContactUs = () => {
               </div>
               <div>
                 {/* Address */}
-                <div className="flex items-center space-x-4 col-span-1 sm:col-span-2 lg:col-span-3 mt-6">
+                <div className="flex items-center space-x-4 gap-2 col-span-1 sm:col-span-2 lg:col-span-3 mt-6">
                   <FaMapMarkerAlt
                     className="primary_text_color light_bg_color p-2 rounded-full"
                     size={36}
@@ -147,7 +147,7 @@ const ContactUs = () => {
             </div>
 
             {/* Map */}
-            <div className="mt-8 w-full h-[300px]">
+            <div className="mt-8 w-full h-[400px]">
               <iframe
                 title={t("map")}
                 src={`${mapSrc}&disableDefaultUI=0`}
@@ -156,6 +156,7 @@ const ContactUs = () => {
                 className="rounded-md border"
                 allowFullScreen="true"
                 loading="lazy"
+                style={{ filter: isDarkMode ? " invert(90%)" : "none" }}
               ></iframe>
             </div>
           </div>
@@ -199,7 +200,7 @@ const ContactUs = () => {
                 type="submit"
                 className="w-full p-3 border rounded-md primary_bg_color transition text-white"
               >
-               {t("submitMessage")}
+                {t("submitMessage")}
               </button>
             </form>
           </div>

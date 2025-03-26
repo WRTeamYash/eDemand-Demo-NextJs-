@@ -91,12 +91,12 @@ module.exports = {
 				blobTurn: {
 					"0%": { transform: "rotate(0deg)" },
 					"100%": { transform: "rotate(360deg)" },
-				  },
-				  blobScale: {
+				},
+				blobScale: {
 					"0%, 100%": { transform: "scaleX(0.9) scaleY(1)" },
 					"50%": { transform: "scaleX(1) scaleY(0.9)" },
-				  },
-				  
+				},
+
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -115,13 +115,19 @@ module.exports = {
 				sm: '2rem'
 			},
 			screens: {
+				'max-479': {
+					max: '479px'
+				},
+				'max-350': {
+					max: '350px'
+				},
 				sm: '600px',
 				md: '728px',
 				lg: '984px',
 				xl: '1240px',
 				'2xl': '1320px',
 				'3xl': '1640px'
-			  },
+			},
 		},
 	},
 	plugins: [require("tailwindcss-animate")],

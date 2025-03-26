@@ -1,4 +1,4 @@
-import { placeholderImage } from "@/utils/Helper";
+"use client";
 import React, { useState, useLayoutEffect, useRef, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
@@ -51,9 +51,6 @@ const ProviderCard = ({ provider }) => {
         <CustomImageTag
           src={provider?.image}
           alt={provider?.username}
-          width={0}
-          height={0}
-          onError={placeholderImage}
           className="w-[80px] h-[80px] rounded-[16px] object-cover"
         />
         <div className="flex flex-col gap-1 w-full">

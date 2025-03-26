@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
 import { motion } from "framer-motion";
+import CustomImageTag from "../CustomImageTag";
 
 const LogoutIcon = () => {
   const [squish, setSquish] = useState(false);
@@ -34,7 +35,7 @@ const LogoutIcon = () => {
           }
         }}
       >
-        <img
+        <CustomImageTag
           src="https://images.unsplash.com/photo-1583524505974-6facd53f4597?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
           alt="Blob Image"
           className="w-full h-full object-cover absolute"

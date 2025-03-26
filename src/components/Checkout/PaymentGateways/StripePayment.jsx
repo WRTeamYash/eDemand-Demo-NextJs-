@@ -5,13 +5,12 @@ import StripePaymentForm from "./StripePaymentForm"; // Import the StripePayment
 import { loadStripeApiKey } from "@/utils/Helper";
 import { IoCloseCircle } from "react-icons/io5";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { addTransactionsApi } from "@/api/apiRoutes";
 
 const stripeLoadKey = loadStripeApiKey();
 const stripePromise = loadStripe(stripeLoadKey);
 
-const StripePayment = ({ clientKey, amount, orderID, open, setOpen, t, isAdditionalCharge }) => {
+const StripePayment = ({ clientKey, amount, orderID, open, setOpen, t, isAdditionalCharge, setIsProcessingCheckout }) => {
   const options = {
     clientSecret: clientKey,
     appearance: {
@@ -29,8 +28,10 @@ const StripePayment = ({ clientKey, amount, orderID, open, setOpen, t, isAdditio
     });
     if (response.error === false) {
       setOpen(false); // Close the modal
+      setIsProcessingCheckout(false);
     } else {
       toast.error(response.message || "Failed to update transaction status.");
+      setIsProcessingCheckout(false);
     }
   };
 

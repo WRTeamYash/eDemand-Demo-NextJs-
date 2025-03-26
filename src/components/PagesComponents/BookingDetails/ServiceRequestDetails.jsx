@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout/Layout";
 import BreadCrumb from "@/components/ReUseableComponents/BreadCrumb";
@@ -6,11 +7,11 @@ import { MdArrowBackIosNew } from "react-icons/md";
 import {
   customJobStatusColors,
   customJobStatusNames,
+  isMobile,
   miniDevider,
-  showPrice,
+  showPrice
 } from "@/utils/Helper";
 import { FaClock } from "react-icons/fa";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   cancelCustomJobReqApi,
@@ -23,11 +24,12 @@ import dayjs from "dayjs";
 import NoDataFound from "@/components/ReUseableComponents/Error/NoDataFound";
 import { toast } from "react-toastify";
 import { useTranslation } from "@/components/Layout/TranslationContext";
-import { setDilveryDetails, setCustomJobData } from "@/redux/reducers/cartSlice";
+import { setCustomJobData } from "@/redux/reducers/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
+import CustomImageTag from "@/components/ReUseableComponents/CustomImageTag";
 
 const ServiceRequestDetails = () => {
-  const t = useTranslation()
+  const t = useTranslation();
   const dispatch = useDispatch();
   const router = useRouter();
   const desRef = useRef(null);
@@ -79,10 +81,10 @@ const ServiceRequestDetails = () => {
   };
 
   useEffect(() => {
-    if (slug) {
-      fetchDetails();
+    if (slug && router.isReady) {
+      fetchDetails(false, 0);
     }
-  }, [slug]);
+  }, [slug, router.isReady]);
 
   // Check if desc section is overflowing
   useEffect(() => {
@@ -123,7 +125,6 @@ const ServiceRequestDetails = () => {
     }
   }, [biddersDesRef, biddersData]);
 
-
   const handleCanceleBooking = async (e) => {
     e.preventDefault();
     try {
@@ -143,25 +144,28 @@ const ServiceRequestDetails = () => {
 
   const handleBookNow = (bid) => {
     // Set custom job data in cart with all necessary provider details
-    dispatch(setCustomJobData({
-      bidId: bid?.id,
-      providerId: bid?.partner_id,
-      counterPrice: Number(bid?.counter_price),
-      custom_job_request_id: bid?.custom_job_request_id,
-      at_doorstep: bid?.at_doorstep,
-      at_store: bid?.at_store,
-      is_pay_later_allowed: bid?.is_pay_later_allowed,
-      is_online_payment_allowed: bid?.is_online_payment_allowed,
-      providerDetails: {
-        name: bid?.provider_name,
-        image: bid?.provider_image,
-        visiting_charges: Number(bid?.visiting_charges || 0),
-        duration: bid?.duration
-      }
-    }));
+    dispatch(
+      setCustomJobData({
+        bidId: bid?.id,
+        providerId: bid?.partner_id,
+        counterPrice: Number(bid?.final_total),
+        custom_job_request_id: bid?.custom_job_request_id,
+        at_doorstep: bid?.at_doorstep,
+        at_store: bid?.at_store,
+        is_pay_later_allowed: bid?.is_pay_later_allowed,
+        is_online_payment_allowed: bid?.is_online_payment_allowed,
+        advance_booking_days: bid?.advance_booking_days,
+        providerDetails: {
+          name: bid?.provider_name,
+          image: bid?.provider_image,
+          visiting_charges: Number(bid?.visiting_charges || 0),
+          duration: bid?.duration,
+        },
+      })
+    );
 
     // Navigate to checkout
-    router.push('/checkout');
+    router.push("/checkout");
   };
 
   // Check if bidder description is overflowing
@@ -176,23 +180,29 @@ const ServiceRequestDetails = () => {
 
   // Toggle bidder description expansion
   const toggleBidderDescription = (bidderId) => {
-    setExpandedBidderIds(prev => 
-      prev.includes(bidderId) 
-        ? prev.filter(id => id !== bidderId)
+    setExpandedBidderIds((prev) =>
+      prev.includes(bidderId)
+        ? prev.filter((id) => id !== bidderId)
         : [...prev, bidderId]
     );
   };
 
+  const handleLoadMore = () => {
+    const newOffset = offset + limit;
+    setOffset(newOffset);
+    fetchDetails(true, newOffset);
+  };
+
   return (
     <Layout>
-      <BreadCrumb firstEle={t("bookingDetails")} />
+      <BreadCrumb firstEle={t("bookingDetails")} isMobile={isMobile} />
 
-      <section className="profile_sec my-12">
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto">
           {/* Grid layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="col-span-1 lg:col-span-3">
+            <div className="col-span-1 lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
@@ -200,59 +210,55 @@ const ServiceRequestDetails = () => {
             <div className="col-span-1 lg:col-span-9">
               <div className="flex flex-col gap-6">
                 {/* Header */}
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full flex-wrap gap-2">
                   <div className="flex items-center gap-4">
                     <button
                       onClick={handleGoback}
-                      className="background_color p-3 rounded-lg"
+                      className={`background_color p-3 rounded-lg `}
                       title={t("back")}
                     >
                       <MdArrowBackIosNew size={18} />
                     </button>
 
-                    <h1 className="text-xl font-semibold sm:text-2xl lg:text-3xl">
+                    <h1 className="text-lg font-semibold sm:text-2xl lg:text-3xl">
                       {t("myServiceReqDetails")}
                     </h1>
                   </div>
                   {serviceData?.status === "pending" && (
                     <button
-                      className="p-3 border rounded-lg description_color"
+                      className="p-1 sm:p-3 border rounded-lg description_color"
                       onClick={(e) => handleCanceleBooking(e)}
                     >
                       {t("cancelBooking")}
                     </button>
                   )}
-                  {/* {serviceData?.status === "cancelled" && (
-                    <button
-                      className="p-3 border border-red-500 rounded-lg text-red-600"
-                      disabled
-                    >
-                      Cancelled
-                    </button>
-                )} */}
+
                 </div>
                 <Separator />
 
                 {/* Service Details */}
                 <div className="relative">
-                  <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl">
+                  <h2 className="text-xl md:text-2xl font-bold sm:text-3xl lg:text-4xl">
                     {serviceData?.service_title}
                   </h2>
                 </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold mb-2">{t("description")}</h3>
+                <div className="">
+                  <h3 className="md:text-lg font-semibold mb-2 capitalize">
+                    {t("description")}
+                  </h3>
                   <div className="relative">
                     <p
                       ref={desRef}
-                      className={`text-sm description_color ${
-                        isServiceDescExpanded ? "" : "line-clamp-2"
-                      }`}
+                      className={`text-sm description_color ${isServiceDescExpanded ? "" : "line-clamp-2"
+                        }`}
                     >
                       {serviceData?.service_short_description}
                     </p>
                     {isServiceDescOverflowing && (
                       <button
-                        onClick={() => setIsServiceDescExpanded(!isServiceDescExpanded)}
+                        onClick={() =>
+                          setIsServiceDescExpanded(!isServiceDescExpanded)
+                        }
                         className="primary_text_color text-sm mt-1"
                       >
                         {isServiceDescExpanded ? t("viewLess") : t("viewMore")}
@@ -263,22 +269,25 @@ const ServiceRequestDetails = () => {
 
                 {/* Category and OTP */}
                 <div className="flex flex-wrap sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span>{t("category")}</span>
-                    <span className="light_bg_color primary_text_color px-3 py-1 rounded-md text-sm">
-                      {serviceData?.category_name}
+                  <div className="flex  gap-2 flex-col md:flex-row items-start md:items-center">
+                    <span>{t("service")}</span>
+                    <span className="light_bg_color primary_text_color px-3 py-1 rounded-md text-sm flex items-center justify-center gap-2">
+                      <CustomImageTag src={serviceData?.category_image} alt={serviceData?.category_name} className="w-6 h-6 rounded-lg" />
+                      <span>
+                        {serviceData?.category_name}
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span>{t("status")}</span>
                     <span
-                      className="px-3 py-1 rounded-md text-sm"
+                      className="px-3 py-1 rounded-md text-sm capitalize"
                       style={{
                         color: statusColor,
                         backgroundColor: `${statusColor}29`,
                       }}
                     >
-                      {statusName}
+                      {t(statusName)}
                     </span>
                   </div>
                 </div>
@@ -299,7 +308,7 @@ const ServiceRequestDetails = () => {
                         serviceData?.requested_start_date +
                         " " +
                         serviceData?.requested_start_time
-                      ).format("MM/DD/YYYY - hh:mm A")}
+                      ).format("DD-MM-YYYY - hh:mm A")}
                     </p>
                   </div>
                   <div>
@@ -309,7 +318,7 @@ const ServiceRequestDetails = () => {
                         serviceData?.requested_end_date +
                         " " +
                         serviceData?.requested_end_time
-                      ).format("MM/DD/YYYY - hh:mm A")}
+                      ).format("DD-MM-YYYY - hh:mm A")}
                     </p>
                   </div>
                 </div>
@@ -329,7 +338,7 @@ const ServiceRequestDetails = () => {
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {biddersData?.map((bid, index) => (
                       <div
                         className="p-4 card_bg rounded-xl border shadow-sm"
@@ -354,25 +363,30 @@ const ServiceRequestDetails = () => {
                               </h3>
                               <div className="relative">
                                 <p
-                                  ref={(el) => (bidderRefs.current[bid.id] = el)}
-                                  className={`text-sm description_color break-words whitespace-pre-wrap ${
-                                    expandedBidderIds.includes(bid.id) 
-                                      ? "" 
-                                      : "line-clamp-2"
-                                  }`}
+                                  ref={(el) =>
+                                    (bidderRefs.current[bid.id] = el)
+                                  }
+                                  className={`text-sm description_color break-words whitespace-pre-wrap ${expandedBidderIds.includes(bid.id)
+                                    ? ""
+                                    : "line-clamp-2"
+                                    }`}
                                   style={{
-                                    wordBreak: 'break-word',
-                                    overflowWrap: 'break-word'
+                                    wordBreak: "break-word",
+                                    overflowWrap: "break-word",
                                   }}
                                 >
                                   {bid?.note}
                                 </p>
                                 {bid?.note && bid.note.length > 100 && (
                                   <button
-                                    onClick={() => toggleBidderDescription(bid.id)}
+                                    onClick={() =>
+                                      toggleBidderDescription(bid.id)
+                                    }
                                     className="primary_text_color text-sm mt-1"
                                   >
-                                    {expandedBidderIds.includes(bid.id) ? t("viewLess") : t("viewMore")}
+                                    {expandedBidderIds.includes(bid.id)
+                                      ? t("viewLess")
+                                      : t("viewMore")}
                                   </button>
                                 )}
                               </div>
@@ -380,32 +394,32 @@ const ServiceRequestDetails = () => {
                           </div>
                           <hr className="description_color" />
                           {/* Price and Duration */}
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-4">
-                              <span className="text-lg font-semibold">
-                                {showPrice(bid?.counter_price)}
+                          <div className="flex  justify-between mt-3 flex-col md:flex-row gap-5 md:gap-0 items-start md:items-center">
+                            <div className="flex items-center gap-4 lg:max-w-[80%] flex-wrap">
+                              <span className="text-lg font-semibold break-all">
+                                {showPrice(bid?.final_total)}
                               </span>
                               {miniDevider}
                               <div className="flex items-center">
                                 <FaClock
                                   size={18}
-                                  className="primary_text_color mr-1"
+                                  className="primary_text_color rtl:ml-1 mr-1"
                                 />
                                 <span className="text-sm">
-                                  {bid?.duration} {t("hours")}
+                                  {bid?.duration} {t("mins")}
                                 </span>
                               </div>
                             </div>
-
                             {/* Book Now Button */}
-                            {serviceData?.status !== "booked" && bid?.status !== "cancelled" && (
-                              <button 
-                                className="px-4 py-2 text-sm font-medium text-white primary_bg_color rounded-lg focus:outline-none"
-                                onClick={() => handleBookNow(bid)}
-                              >
-                                {t("bookNow")}
-                              </button>
-                            )}
+                            {serviceData?.status !== "booked" &&
+                              serviceData?.status !== "cancelled" && (
+                                <button
+                                  className="w-full md:w-auto px-4 py-2 text-sm font-medium text-white primary_bg_color rounded-lg focus:outline-none"
+                                  onClick={() => handleBookNow(bid)}
+                                >
+                                  {t("bookNow")}
+                                </button>
+                              )}
                           </div>
                         </div>
                       </div>

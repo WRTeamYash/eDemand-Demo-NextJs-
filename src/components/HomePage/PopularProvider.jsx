@@ -3,7 +3,6 @@ import CommanHeadline from '../ReUseableComponents/CommanHeadline';
 import { Swiper, SwiperSlide } from "swiper/react";
 import 'swiper/css';
 import { Autoplay, FreeMode } from 'swiper/modules';
-import providerImg from '@/assets/nearbyprovider.png';
 import ProviderCard from '../Cards/ProviderCard';
 import { useRTL } from '@/utils/Helper';
 
@@ -17,7 +16,7 @@ const PopularProvider = () => {
             rating: 4.8,
             orders: 150,
             services: ["Water Leaks", "Bathroom Installation", "+6"],
-            imageUrl: providerImg,
+            imageUrl: "",
         },
         {
             name: "Piston Car Service",
@@ -25,7 +24,7 @@ const PopularProvider = () => {
             rating: 4.6,
             orders: 143,
             services: ["Car Repair", "Car Wash", "+8"],
-            imageUrl: providerImg,
+            imageUrl: "",
         },
         {
             name: "The Barber Shop",
@@ -33,7 +32,7 @@ const PopularProvider = () => {
             rating: 4.3,
             orders: 140,
             services: ["Women Hair Highlights", "Pedicure", "+12"],
-            imageUrl: providerImg,
+            imageUrl: "",
         },
         {
             name: "The Barber Shop",
@@ -41,7 +40,7 @@ const PopularProvider = () => {
             rating: 4.3,
             orders: 140,
             services: ["Women Hair Highlights", "Pedicure", "+12"],
-            imageUrl: providerImg,
+            imageUrl: "",
         },
         {
             name: "The Barber Shop",
@@ -49,7 +48,7 @@ const PopularProvider = () => {
             rating: 4.3,
             orders: 140,
             services: ["Women Hair Highlights", "Pedicure", "+12"],
-            imageUrl: providerImg,
+            imageUrl: "",
         },
     ];
     const breakpoints = {

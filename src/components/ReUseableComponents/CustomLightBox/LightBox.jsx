@@ -43,10 +43,10 @@ const Lightbox = ({ images, initialIndex = 0, onClose, isLightboxOpen }) => {
         <DialogContent className="flex flex-col items-center bg-transparent border-none text-white p-4 max-w-7xl mx-auto rounded-lg shadow-none">
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 text-white text-xl"
+            className="absolute top-2 right-2 text-white text-xl rtl:left-2 rtl:right-auto z-10 p-2"
             aria-label="Close"
           >
-            <MdClose />
+            <MdClose size={24} />
           </button>
 
           {/* Main Image Section */}
@@ -60,11 +60,11 @@ const Lightbox = ({ images, initialIndex = 0, onClose, isLightboxOpen }) => {
                 <FaArrowLeft />
               </button>
             )}
-            <div className="flex items-center justify-center mx-auto  max-w-[20vh] md:max-w-[30vw] max-h-[80vh] md:max-h-[60vh]">
+            <div className="flex items-center justify-center mx-auto  max-w-[60vh] md:max-w-[30vw] max-h-[80vh] md:max-h-[60vh]">
               <CustomImageTag
                 src={images[currentIndex]}
                 alt={`Image ${currentIndex}`}
-                className="w-full h-full object-contain mx-4  max-w-[20vh] md:max-w-[30vw] max-h-[80vh] md:max-h-[60vh]"
+                className="w-full h-full object-contain mx-4  max-w-[60vh] md:max-w-[30vw] max-h-[80vh] md:max-h-[60vh]"
               />
             </div>
             {images?.length > 1 && (
@@ -79,7 +79,7 @@ const Lightbox = ({ images, initialIndex = 0, onClose, isLightboxOpen }) => {
           </div>
 
           {/* Footer Thumbnails */}
-          <div className="flex items-center overflow-x-auto mt-4 gap-1 justify-center relative z-50">
+          <div className="flex items-center overflow-x-auto mt-4 gap-1 justify-center relative z-50 w-3/4">
             {images?.map((image, index) => (
               <div
                 key={index}
@@ -89,11 +89,10 @@ const Lightbox = ({ images, initialIndex = 0, onClose, isLightboxOpen }) => {
                 <CustomImageTag
                   src={image}
                   alt={`Thumbnail ${index}`}
-                  className={`w-16 h-16 object-cover cursor-pointer ${
-                    index === currentIndex
-                      ? "border-2 border_color"
-                      : "border border-gray-300"
-                  } rounded-md`}
+                  className={`w-16 h-16 object-cover cursor-pointer ${index === currentIndex
+                    ? "border-2 border_color"
+                    : "border border-gray-300"
+                    } rounded-md`}
                 />
               </div>
             ))}

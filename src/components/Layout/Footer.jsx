@@ -1,16 +1,15 @@
 "use client";
-import Image from "next/image";
 import { RiMailSendLine } from "react-icons/ri";
 import { LuClock } from "react-icons/lu";
 import { PiPhoneCall } from "react-icons/pi";
 import { IoLocationOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import Link from "next/link";
-import { placeholderImage } from "@/utils/Helper";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import { useTranslation } from "./TranslationContext";
 
 const Footer = () => {
+
   const t = useTranslation();
 
   const settingsData = useSelector((state) => state?.settingsData);
@@ -44,6 +43,8 @@ const Footer = () => {
     </svg>
   );
 
+
+
   return (
     websettings &&
     general_settings && (
@@ -52,7 +53,7 @@ const Footer = () => {
           {/* eDemand Info */}
           <div>
             <Link href="/">
-              <div className="w-[160px] h-auto">
+              <div className="w-16 md:w-[160px] h-auto">
                 <CustomImageTag
                   src={websettings?.footer_logo}
                   alt="eDemand Logo"
@@ -75,10 +76,6 @@ const Footer = () => {
                   <CustomImageTag
                     src={social.file}
                     alt="account"
-                    width={30}
-                    height={30}
-                    loading="lazy"
-                    onError={placeholderImage}
                   />
                 </Link>
               ))}
@@ -126,9 +123,9 @@ const Footer = () => {
 
           {/* Contact Info */}
           {general_settings?.support_email ||
-          general_settings?.phone ||
-          general_settings?.support_hours ||
-          general_settings?.address ? (
+            general_settings?.phone ||
+            general_settings?.support_hours ||
+            general_settings?.address ? (
             <div>
               <h3 className="font-semibold mb-4">{t("contactInfo")}</h3>
               <ul className="space-y-2 text-white">

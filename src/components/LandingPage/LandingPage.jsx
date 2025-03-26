@@ -15,6 +15,7 @@ import { selectTheme } from "@/redux/reducers/themeSlice";
 import config from "@/utils/Langconfig";
 import { setLanguage } from "@/utils/Helper";
 import SomethingWentWrong from "../ReUseableComponents/Error/SomethingWentWrong";
+import MaintenanceMode from "../ReUseableComponents/Error/MaintanceMode";
 
 const LandingPage = () => {
   const dispatch = useDispatch();
@@ -38,8 +39,10 @@ const LandingPage = () => {
   }, [dispatch]);
 
   const [landingPageData, setLandingPageData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // Start in a loading state
   const [settingsError, setSettingsError] = useState(false);
+  const [webMaintananceMode, setWebMaintananceMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
 
 
   const getLandingPageData = async () => {
@@ -57,8 +60,14 @@ const LandingPage = () => {
   const fetchSettings = async () => {
     try {
       const response = await get_settings();
-      dispatch(setSettings(response?.data));
-      getLandingPageData();
+      if (!response || response.error === true || !response.data) {
+        setSettingsError(true);
+      } else {
+        dispatch(setSettings(response.data));
+        setWebMaintananceMode(response.data?.web_settings?.web_maintenance_mode === 1);
+        getLandingPageData();
+      }
+     
     } catch (error) {
       console.error("Error fetching settings:", error);
       setSettingsError(true)
@@ -75,8 +84,12 @@ const LandingPage = () => {
     return <Loader />;
   }
 
-  if(settingsError){
-    return <SomethingWentWrong />
+  if (settingsError) {
+    return <SomethingWentWrong />;
+  }
+
+  if(webMaintananceMode) {
+    return <MaintenanceMode />;
   }
 
   return (

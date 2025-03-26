@@ -10,15 +10,14 @@ import {
   setLongitude,
 } from "@/redux/reducers/locationSlice";
 import { useRouter } from "next/router";
-import { getFormattedAddress} from "@/utils/Helper";
-import LocationModal from "../LocationModal";
+import { getFormattedAddress } from "@/utils/Helper";
 import { useTranslation } from "@/components/Layout/TranslationContext";
+import { getPlacesDetailsForWebApi, getPlacesForWebApi } from "@/api/apiRoutes";
 
 const SearchLocationBox = ({ open, setIsModalOpen }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const t = useTranslation();
-
 
   const closeModal = () => setIsModalOpen(false);
 
@@ -44,10 +43,10 @@ const SearchLocationBox = ({ open, setIsModalOpen }) => {
     const fetchPlaces = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/places-autocomplete?input=${searchInput}`
-        );
-        const data = await response.json();
+        const response = await getPlacesForWebApi({
+          input: searchInput,
+        });
+        const data = await response?.data?.data;
         setPlaceSuggestions(data.predictions || []);
         setActiveIndex(-1); // Reset index when suggestions change
       } catch (error) {
@@ -63,24 +62,36 @@ const SearchLocationBox = ({ open, setIsModalOpen }) => {
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
 
+  const fetchPlaceDetails = async (place) => {
+    try {
+      const response = await getPlacesDetailsForWebApi({
+        place_id: place?.place_id,
+      });
+      return response?.data?.data?.results[0];
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // Handle place selection
-  const handlePlaceSelect = (place) => {
+  const handlePlaceSelect = async (place) => {
     setIsSelecting(true); // Mark as selecting to prevent API call
 
     setSearchInput(place.description); // Set the selected place in the input field
-    
+
+    const fullAddress = await fetchPlaceDetails(place);
+
     setFullAddress({
-      lat: place?.lat,
-      lng: place?.lng,
-      address: place?.description,
+      lat: fullAddress?.geometry?.location?.lat,
+      lng: fullAddress?.geometry?.location?.lng,
+      address: fullAddress?.formatted_address,
     });
 
-   // Clear the search input and suggestions
-   setPlaceSuggestions([]); // Clear suggestions
-   setActiveIndex(-1); // Reset active index
+    // Clear the search input and suggestions
+    setPlaceSuggestions([]); // Clear suggestions
+    setActiveIndex(-1); // Reset active index
 
-   // Delay allowing API calls after a short timeout
-   setTimeout(() => setIsSelecting(false), 500);
+    // Delay allowing API calls after a short timeout
+    setTimeout(() => setIsSelecting(false), 500);
   };
 
   // Handle keyboard navigation

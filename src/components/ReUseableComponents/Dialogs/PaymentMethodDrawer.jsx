@@ -62,7 +62,7 @@ const PaymentMethodDrawer = ({
             <button
               onClick={handleSubmit}
               disabled={!selectedMethod || isLoading}
-              className={`w-full py-3 px-4 rounded-lg text-white font-medium ${
+              className={`w-full py-3 px-4 rounded-lg text-white dark:text-black font-medium ${
                 !selectedMethod || isLoading
                   ? "bg-gray-300 cursor-not-allowed"
                   : "primary_bg_color hover:bg-primary/90"

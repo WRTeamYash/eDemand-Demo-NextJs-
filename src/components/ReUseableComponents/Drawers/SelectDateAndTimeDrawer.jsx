@@ -12,7 +12,10 @@ import dayjs from "dayjs";
 import { FaCheck } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { setDilveryDetails } from "@/redux/reducers/cartSlice";
+import {
+  selectCartProvider,
+  setDilveryDetails,
+} from "@/redux/reducers/cartSlice";
 import CustomTimePicker from "./CustomTimePicker";
 import { useRouter } from "next/router";
 import { useTranslation } from "@/components/Layout/TranslationContext";
@@ -26,13 +29,23 @@ const SelectDateAndTimeDrawer = ({
   isRechedule,
   orderID,
   customJobId,
+  advance_booking_days
 }) => {
   const t = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
+
   // Get reorder state
   const isReorderMode = useSelector(selectReorderMode);
   const reorderState = useSelector((state) => state.reorder);
+
+  // Use reorder data if in reorder mode, otherwise use cart data
+  const currentCartProviderData = useSelector((state) =>
+    isReorderMode ? reorderState?.provider : selectCartProvider(state)
+  );
+
+  const bookingDays = currentCartProviderData?.advance_booking_days || advance_booking_days;
+
 
   const [selectedDate, setSelectedDate] = useState(
     dilveryDetails?.dilveryDate
@@ -101,7 +114,7 @@ const SelectDateAndTimeDrawer = ({
       if (response?.error === false) {
         toast.success(response?.message);
         onClose();
-        router.push(`/booking/${orderID}`);
+        router.push(`/booking/inv-${orderID}`);
       } else {
         toast.error(response?.message);
       }
@@ -124,7 +137,12 @@ const SelectDateAndTimeDrawer = ({
           date: dayjs(selectedDate).format("YYYY-MM-DD"),
           time: selectedTimeSlot,
           custom_job_request_id: customJobId ? customJobId : "",
-          order_id: isReorderMode ? reorderState.orderId : "",
+          order_id: isReorderMode
+            ? reorderState.orderId
+            : orderID
+              ? orderID
+              : "",
+          // is_reorder: isReorderMode ? 1 : "",
         });
         if (response?.error === false) {
           if (!isRechedule) {
@@ -149,14 +167,15 @@ const SelectDateAndTimeDrawer = ({
   };
 
   return (
-    <Drawer open={open} onClose={handleClose} closeOnClickOutside={false}>
+    <Drawer open={open} onClose={handleClose} modal>
       <DrawerContent
         className={cn(
           "max-w-full lg:max-w-7xl mx-auto rounded-tr-[18px]",
-          "max-h-full lg:max-h-fit overflow-y-auto lg:overflow-hidden [&_::-webkit-calendar-picker-indicator]:z-[60]"
+          "max-h-[90%] lg:max-h-fit overflow-y-auto lg:overflow-hidden [&_::-webkit-calendar-picker-indicator]:z-[60]",
+          "after:!content-none"
         )}
       >
-        <DrawerTitle className="hidden">{t("scheduleAppointment")}</DrawerTitle>
+        <DrawerTitle className="hidden"></DrawerTitle>
         <div className="select_date flex flex-col lg:flex-row gap-8 py-4 lg:py-16 px-4 lg:px-12 overflow-y-auto h-fit max-h-fit">
           {/* Left side: Calendar */}
           <div className="w-full">
@@ -167,7 +186,10 @@ const SelectDateAndTimeDrawer = ({
                 selected={selectedDate.toDate()} // Convert dayjs object to Date for the Calendar
                 onSelect={(date) => setSelectedDate(dayjs(date))} // Use dayjs to set selectedDate
                 showOutsideDays={true}
-                disabled={{ before: new Date() }}
+                disabled={{
+                  before: new Date(), // Disable past dates
+                  after: dayjs().add(bookingDays - 1, "day").toDate(), // Disable dates beyond booking days
+                }}
               />
             </div>
           </div>
@@ -179,9 +201,9 @@ const SelectDateAndTimeDrawer = ({
                 {t("selectTimeSlot")}{" "}
               </h2>
               <div className="flex flex-col gap-6">
-                {timeSlots.length > 0 ? (
+                {timeSlots?.length > 0 ? (
                   <>
-                    <div className="time_slots grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-2">
+                    <div className="time_slots grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-2 lg:max-h-[400px] overflow-y-auto">
                       {timeSlots?.map((timeSlot) => (
                         <button
                           key={timeSlot.time}
@@ -191,7 +213,7 @@ const SelectDateAndTimeDrawer = ({
                               ? "primary_text_color border_color selected_shadow"
                               : "description_color",
                             timeSlot.is_available === 0 &&
-                              "opacity-50 cursor-not-allowed !background_color"
+                            "opacity-50 cursor-not-allowed !background_color"
                           )}
                           onClick={() =>
                             timeSlot.is_available === 1 &&
@@ -225,7 +247,13 @@ const SelectDateAndTimeDrawer = ({
                       />
                     </div>
                   </>
-                ) : null}
+                ) : (
+                  <div className="w-full h-[500px] flex items-center justify-center">
+                    <p className="text-center text-sm text-gray-500">
+                      {t("providerIsClosed")}
+                    </p>
+                  </div>
+                )}
                 <div className="continue flex items-center">
                   <button
                     className="primary_bg_color text-white rounded-lg p-3 w-full"

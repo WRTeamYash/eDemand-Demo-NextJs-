@@ -5,6 +5,8 @@ import BreadCrumb from "../ReUseableComponents/BreadCrumb";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { useTranslation } from "../Layout/TranslationContext";
+import RichTextContent from '../ReUseableComponents/RichTextContent.jsx';
+
 const AboutUs = () => {
   const t = useTranslation();
   const settingsData = useSelector((state) => state.settingsData);
@@ -26,7 +28,7 @@ const AboutUs = () => {
     <Layout>
       <BreadCrumb firstEle={t("aboutUs")} firstEleLink="/about-us" />
       <section className="about-us my-12 container mx-auto min-h-[50vh]">
-        <div dangerouslySetInnerHTML={{ __html: about_us || "" }} />
+        <RichTextContent content={about_us} />
       </section>
     </Layout>
   );

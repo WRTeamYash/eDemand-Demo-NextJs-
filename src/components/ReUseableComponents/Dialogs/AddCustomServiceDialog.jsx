@@ -99,7 +99,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
       return;
     }
     if (!formValues.category) {
-      toast.error(t("pleaseSelectCategory"));
+      toast.error(t("pleaseSelectService"));
       return;
     }
     if (!formValues.minPrice) {
@@ -178,8 +178,8 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-xl font-semibold">
               {datePickerType === "startDateTime"
-                ? "Select Start Date & Time"
-                : "Select End Date & Time"}
+                ? t("selectStartDateAndTime")
+                : t("selectEndDateAndTime")}
             </DialogTitle>
             <button
               onClick={() => {
@@ -226,7 +226,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
               value={formValues.category}
             >
               <SelectTrigger className="w-full px-4 py-2 border rounded-md description_color focus:outline-none focus:ring-0 focus:ring-transparent background_color description_color">
-                <SelectValue placeholder="Select Category" />
+                <SelectValue placeholder={t("selectService")} />
               </SelectTrigger>
               <SelectContent className="max-h-[200px] overflow-y-auto">
                 {categories &&
@@ -243,7 +243,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
             type="text"
             name="serviceTitle"
             placeholder={t("serviceTitle")}
-            className="w-full background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent"
+            className="w-full background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent dark:border"
             onChange={handleChange}
             value={formValues.serviceTitle}
           />
@@ -252,7 +252,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
           <textarea
             name="serviceDescription"
             placeholder={t("serviceDesc")}
-            className="w-full background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent"
+            className="w-full background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent dark:border"
             onChange={handleChange}
             value={formValues.serviceDescription}
           />
@@ -263,7 +263,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
               type="number"
               name="minPrice"
               placeholder={t("minPrice")}
-              className="w-1/2 background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent"
+              className="w-1/2 background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent dark:border"
               onChange={handleChange}
               value={formValues.minPrice}
             />
@@ -271,7 +271,7 @@ const AddCustomServiceDialog = ({ open, close, fetchBookings }) => {
               type="number"
               name="maxPrice"
               placeholder={t("maxPrice")}
-              className="w-1/2 background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent"
+              className="w-1/2 background_color description_color p-2 rounded focus:outline-none focus:ring-0 focus:ring-transparent dark:border"
               onChange={handleChange}
               value={formValues.maxPrice}
             />

@@ -7,7 +7,6 @@ import Lightbox from '@/components/ReUseableComponents/CustomLightBox/LightBox';
 import { useSelector } from 'react-redux';
 import { fetch_chat_history, fetch_providr_chat_list, send_chat_message } from '@/api/apiRoutes';
 import { useTranslation } from '@/components/Layout/TranslationContext';
-import { placeholderImage } from '@/utils/Helper';
 import { getUserData } from '@/redux/reducers/userDataSlice';
 import moment from 'moment';
 import withAuth from '@/components/Layout/withAuth';
@@ -18,11 +17,12 @@ import AdminChat from './AdminChat';
 import ChatList from './ChatList';
 import ProviderChat from './ProviderChat';
 import CustomImageTag from '@/components/ReUseableComponents/CustomImageTag';
+import { isMobile } from '@/utils/Helper';
 
 const ChatPage = ({ notificationData }) => {
 
     const t = useTranslation();
-
+    
     const settingsData = useSelector((state) => state?.settingsData);
 
     const userData = useSelector(getUserData);
@@ -322,7 +322,7 @@ const ChatPage = ({ notificationData }) => {
                     <div className={`flex flex-col gap-1 ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'justify-end items-end' : ''}`}>
                         {
                             message.message.trim() !== '' &&
-                            <p className={`px-6 py-2 max-w-[230px] sm:max-w-[370px] xl:max-w-[440px] ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'primary_bg_color text-white' : 'bg-[#F2F1F6]'} my-1 message`}>
+                            <p className={`px-6 py-2 max-w-[230px] sm:max-w-[370px] xl:max-w-[440px] ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'primary_bg_color text-white' : 'bg-[#F2F1F6] text-black'} my-1 message`}>
                                 {message.message}
                             </p>
                         }
@@ -340,7 +340,7 @@ const ChatPage = ({ notificationData }) => {
                     <div className={`flex flex-col gap-1 ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'justify-end items-end' : 'justify-start items-start'}`}>
                         {
                             message.message.trim() !== '' &&
-                            <p className={`px-6 py-2 max-w-[230px] sm:max-w-[370px] xl:max-w-[440px] ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'primary_bg_color text-white' : 'bg-[#F2F1F6]'} my-1 message`}>
+                            <p className={`px-6 py-2 max-w-[230px] sm:max-w-[370px] xl:max-w-[440px] ${(userData?.id === message?.sender_id || userData?.id === message?.sender_details?.id) ? 'primary_bg_color text-white' : 'bg-[#F2F1F6] text-black'} my-1 message`}>
                                 {message.message}
                             </p>
                         }
@@ -379,14 +379,12 @@ const ChatPage = ({ notificationData }) => {
                                     src={file.file}
                                     alt={file.file_name}
                                     className="image-item svg-item w-[160px] h-[100px] border rounded-sm object-fill"
-                                    onError={placeholderImage}
                                 />
                             ) : (
                                 <CustomImageTag
                                     src={file.file}
                                     alt={file.file_name}
                                     className="image-item w-[160px] h-[100px] border rounded-sm"
-                                    onError={placeholderImage}
                                 />
                             )}
                         </div>
@@ -579,7 +577,8 @@ const ChatPage = ({ notificationData }) => {
 
     return (
         <Layout>
-            <BreadCrumb firstEle={t("chats")} firstEleLink="/chats" />
+            <BreadCrumb firstEle={t("chats")} firstEleLink="/chats" isMobile={isMobile} />
+
             <section className='container mb-20'>
                 {
                     isInitialLoading ?

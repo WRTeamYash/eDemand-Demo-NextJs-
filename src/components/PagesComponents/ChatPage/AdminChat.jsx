@@ -41,7 +41,7 @@ const AdminChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, handl
 
                     attachedFiles?.length > 0 &&
                     <div className='absolute bg-gray-100 w-full overflow-x-auto p-2 bottom-[70px] selectedFiles mb-1'>
-                        <span>Selected Files :</span>
+                        <span>{t("selectedFiles")}</span>
                         <div className='flex items-center gap-2 mt-2'>
                             {attachedFiles.map((file, index) => renderFilePreview(file, index))}
                         </div>
@@ -56,7 +56,7 @@ const AdminChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, handl
                         multiple
                     />
                     <button className='primary_bg_color rounded-full h-[30px] w-[30px] flex justify-center text-white items-center ' onClick={() => document.getElementById('file-attachment').click()}><FaPlus size={18} /></button>
-                    <input className='w-[56%] sm:w-[80%] xl:w-full border p-2 rounded-lg' type='text' value={message} onChange={handleMessageChange} placeholder='Type a message...' />
+                    <input className='w-[56%] sm:w-[80%] xl:w-full border p-2 rounded-lg' type='text' value={message} onChange={handleMessageChange} placeholder={t("typeMessage")} />
                 </div>
                 <div className='h-full flex items-center justify-end col-span-2 gap-2'>
                     <span className='text-gray-400'> {message.length}/{MaxCharactersInTextMessage}</span>

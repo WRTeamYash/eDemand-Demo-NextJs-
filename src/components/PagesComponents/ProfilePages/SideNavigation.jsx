@@ -6,7 +6,7 @@ import LogoutDialog from "@/components/ReUseableComponents/Dialogs/LogoutDialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { clearCart } from "@/redux/reducers/cartSlice.js";
 import { clearChatData } from "@/redux/reducers/helperSlice.js";
-import { clearUserData, getUserData } from "@/redux/reducers/userDataSlice";
+import { clearUserData, getUserData } from "@/redux/reducers/userDataSlice.js";
 import FirebaseData from "@/utils/Firebase.js";
 import { isDemoMode, placeholderImage, useRTL } from "@/utils/Helper";
 import Link from "next/link";
@@ -123,10 +123,11 @@ const SideNavigation = () => {
 
   const handleDeleteAccount = async () => {
     if (isDemo) {
-      toast.error(t("actionNotAllowedInDemo"));
+      toast.error(t("demoModeText"));
       setOpenDeleteAccDialog(false);
-      return;
+      return false;
     }
+
     try {
       const firebaseUser = authentication.currentUser;
 
@@ -138,7 +139,7 @@ const SideNavigation = () => {
             if (response?.error === false) {
               toast.success(t("accountDeletedText"));
               setOpenDeleteAccDialog(false);
-              handleLogout()
+              handleLogout();
               router.push("/");
             }
           })
@@ -185,7 +186,7 @@ const SideNavigation = () => {
           <h3 className="mt-4 font-bold text-lg">{userData?.username}</h3>
         )}
         {userData?.email && (
-          <p className="description_color text-sm">{userData?.email}</p>
+          <p className="description_color text-sm break-words">{userData?.email}</p>
         )}
         {userData?.phone && (
           <p className="description_color text-sm">{userData?.phone}</p>
@@ -200,7 +201,7 @@ const SideNavigation = () => {
       <ul className="space-y-6">
         <li>
           <button
-            className="flex items-center justify-center gap-4 w-full p-3 text-sm font-normal rounded-[8px] light_bg_color primary_text_color"
+            className="w-full flex items-center justify-center gap-4 p-3 text-sm font-normal rounded-[8px] light_bg_color primary_text_color"
             onClick={GoChats}
           >
             <IoChatbubbleEllipsesOutline size={22} />

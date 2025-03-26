@@ -1,11 +1,9 @@
 "use client"
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import LocationModal from "../ReUseableComponents/LocationModal";
 import { useDispatch } from "react-redux";
 import { setIsBrowserSupported } from "@/redux/reducers/locationSlice";
 import SearchLocationBox from "../ReUseableComponents/SearchLocationBox/SearchLocationBox";
-import { placeholderImage } from "@/utils/Helper";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 
 const MainLocation = ({ landingPageBg, landingPageLogo, title }) => {
@@ -27,6 +25,7 @@ const MainLocation = ({ landingPageBg, landingPageLogo, title }) => {
       dispatch(setIsBrowserSupported(false));
       return;
     }
+   
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         () => {
@@ -57,12 +56,8 @@ const MainLocation = ({ landingPageBg, landingPageLogo, title }) => {
               <div className="navlogo pt-[20px] sm:pt-[40px] md:pt-[60px] w-[180px]">
               <CustomImageTag
                 alt="image"
-                  width={0}
-                  height={0}
-                  src={landingPageLogo}
-                  className="logo h-[40px] sm:h-[45px] md:h-[50px] w-auto"
-                  loading="lazy"
-                  onError={placeholderImage}
+                className="logo h-[40px] sm:h-[45px] md:h-[50px] w-auto"
+                src={landingPageLogo}
                 />
               </div>
               <div className="searchbox absolute top-[50%] left-0 right-0 transform -translate-y-1/2 mx-auto flex items-center justify-center border-none h-auto">

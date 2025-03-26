@@ -1,11 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import Rating from "./Rating";
-import { placeholderImage } from "@/utils/Helper";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import Lightbox from "../ReUseableComponents/CustomLightBox/LightBox";
+import { useTranslation } from "../Layout/TranslationContext";
 
 const ProviderReviewCard = ({ review }) => {
+  const t = useTranslation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -24,7 +25,7 @@ const ProviderReviewCard = ({ review }) => {
     const today = new Date();
     const diffTime = Math.abs(today - ratedDate); // Difference in milliseconds
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Convert to days
-    return `${diffDays} days ago`;
+    return `${diffDays} ${t("daysAgo")}`;
   };
   return (
     <div key={review?.id} className="border-b pb-8 p-4 last:border-0">
@@ -34,9 +35,6 @@ const ProviderReviewCard = ({ review }) => {
           src={review?.profile_image}
           alt={review?.user_name}
           className="w-12 h-12 rounded-full mb-3 md:mb-0"
-          width={0}
-          height={0}
-          onError={placeholderImage}
         />
         <div className="flex-1">
           <h3 className="font-medium text-xl">{review?.user_name}</h3>
@@ -54,9 +52,7 @@ const ProviderReviewCard = ({ review }) => {
                     src={image}
                     alt={`Review Image ${index + 1}`}
                     className="w-16 h-16 rounded-md"
-                    width={0}
-                    height={0}
-                    onError={placeholderImage}
+
                   />
                   {/* Additional Images Count */}
                   {index === 3 && review?.images?.length > 4 && (

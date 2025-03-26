@@ -9,7 +9,7 @@ import FaqAccordion from "../../ReUseableComponents/FaqAccordion.jsx";
 import Rating from "../Rating.jsx";
 import { Progress } from "@/components/ui/progress";
 import ProviderReviewCard from "../ProviderReviewCard";
-import { isLogin, placeholderImage, showPrice} from "@/utils/Helper";
+import { isLogin, showPrice } from "@/utils/Helper";
 import CustomImageTag from "@/components/ReUseableComponents/CustomImageTag";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,7 +27,6 @@ import { useTranslation } from "@/components/Layout/TranslationContext";
 
 const ProviderServiceDetails = () => {
   const t = useTranslation();
-
 
   const router = useRouter();
   const slug = router.query.slug;
@@ -73,8 +72,8 @@ const ProviderServiceDetails = () => {
       const res = await allServices({
         latitude: locationData?.lat,
         longitude: locationData?.lng,
-        id: serviceId,
-        partner_id: providerId,
+        slug: serviceId,
+        provider_slug: providerId,
       });
 
       if (res?.error === false) {
@@ -90,7 +89,6 @@ const ProviderServiceDetails = () => {
       fetchServiceDetails();
     }
   }, [serviceId]);
-
   const rating = serviceData?.average_rating;
   const totalRating = serviceData?.total_ratings;
   // Mock data for ratings and their counts
@@ -110,10 +108,10 @@ const ProviderServiceDetails = () => {
     }
     try {
       const response = await getRatings({
-        partner_id: providerId,
-        service_id: serviceId,
         limit: limit,
         offset: customOffset,
+        provider_slug: providerId,
+        slug: serviceId,
       });
       if (response?.error === false) {
         setReviewsData((prevReviews) =>
@@ -203,7 +201,7 @@ const ProviderServiceDetails = () => {
           })
         );
 
-        toast.success(response?.message);
+        toast.success(t("serviceUpdatedSuccessFullyToCart"));
 
         // Reset animation
         setTimeout(() => {
@@ -247,6 +245,7 @@ const ProviderServiceDetails = () => {
               items: structuredCartItems || [],
             })
           );
+          toast.success(t("serviceUpdatedSuccessFullyToCart"));
 
           // Reset animation
           setTimeout(() => {
@@ -275,7 +274,7 @@ const ProviderServiceDetails = () => {
 
           // Update Redux state
           dispatch(removeItemFromCart(id));
-          toast.success("Item removed from cart.");
+          toast.success(t("serviceRemovedSuccessFullyFromCart"));
         } else {
           toast.error(response?.message);
         }
@@ -290,7 +289,7 @@ const ProviderServiceDetails = () => {
     e.preventDefault();
 
     if (!isLoggedIn) {
-      toast.error(t("Please login first!"));
+      toast.error(t("plzLoginfirst"));
       return false;
     }
 
@@ -323,7 +322,7 @@ const ProviderServiceDetails = () => {
           })
         );
 
-        toast.success(response?.message);
+        toast.success(t("serviceAddedSuccessFullyToCart"));
       } else {
         toast.error(response?.message);
       }
@@ -347,14 +346,11 @@ const ProviderServiceDetails = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6">
           {/* Left Section */}
           <div className="col-span-12 lg:col-span-4">
-            <div className="service_image h-[540px] sticky top-40">
+            <div className="service_image h-[300px] lg:h-[540px] sticky top-40">
               <CustomImageTag
                 src={serviceData?.image_of_the_service}
                 alt="service_image"
                 className="w-full h-full object-cover rounded-xl"
-                width={0}
-                height={0}
-                onError={placeholderImage}
               />
             </div>
           </div>
@@ -368,9 +364,8 @@ const ProviderServiceDetails = () => {
               </span>
               <div className="mt-4">
                 <p
-                  className={`text-sm description_color leading-relaxed transition-opacity duration-300 ${
-                    isExpanded ? "opacity-100" : "line-clamp-2 opacity-80"
-                  }`}
+                  className={`text-sm description_color leading-relaxed transition-opacity duration-300 ${isExpanded ? "opacity-100" : "line-clamp-2 opacity-80"
+                    }`}
                 >
                   {serviceData?.description}
                 </p>
@@ -379,7 +374,7 @@ const ProviderServiceDetails = () => {
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="font-medium underline text-sm mt-1"
                   >
-                    {isExpanded ? "Show Less" : "Read More"}
+                    {isExpanded ? t("showLess") : t("readMore")}
                   </button>
                 )}
               </div>
@@ -387,7 +382,7 @@ const ProviderServiceDetails = () => {
               <div className="flex items-center gap-4 sm:gap-6 mt-7">
                 {serviceData?.total_ratings > 0 && (
                   <>
-                    <span className="flex items-center">
+                    <span className="flex items-center gap-1">
                       <FaStar className="text-yellow-500" />
                       <span className="ml-1 text-sm font-bold">
                         {serviceData?.total_ratings}
@@ -398,20 +393,20 @@ const ProviderServiceDetails = () => {
                 )}
                 {serviceData?.number_of_members_required > 0 && (
                   <>
-                    <span className="flex items-center">
+                    <span className="flex items-center gap-1">
                       <FaUserFriends className="mr-1 primary_text_color" />
                       <span className="ml-1 text-sm">
-                        {serviceData?.number_of_members_required} {t("persons")}
+                        {serviceData?.number_of_members_required} <span className="hidden lg:block"> {t("persons")}</span>
                       </span>
                     </span>
                     <span className="border border-gray-500 h-3"></span>
                   </>
                 )}
                 {serviceData?.duration && (
-                  <span className="flex items-center pl-2">
+                  <span className="flex items-center gap-1 pl-2">
                     <FaClock className="mr-1 primary_text_color" />
                     <span className="ml-1 text-sm">
-                      {serviceData?.duration} {t("minutes")}
+                      {serviceData?.duration} <span className="hidden lg:block"> {t("minutes")}</span>
                     </span>
                   </span>
                 )}
@@ -447,9 +442,8 @@ const ProviderServiceDetails = () => {
                         </span>
                       )}
                       <span
-                        className={`relative ${
-                          animationClass[serviceData.id]
-                        } transition-transform duration-300`}
+                        className={`relative ${animationClass[serviceData.id]
+                          } transition-transform duration-300`}
                       >
                         {qty[serviceData.id]}
                       </span>
@@ -505,16 +499,14 @@ const ProviderServiceDetails = () => {
                           src={image}
                           alt="service_images"
                           className="w-full h-[96px] object-cover"
-                          width={0}
-                          height={0}
-                          onError={placeholderImage}
                         />
                         {/* Show "+X More" on the last image if there are more than 6 images */}
                         {index === 5 &&
                           serviceData?.other_images.length > 6 && (
                             <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center">
                               <span className="text-md font-bold text-white">
-                                +{serviceData?.other_images.length - 6} {t("more")}
+                                +{serviceData?.other_images.length - 6}{" "}
+                                {t("more")}
                               </span>
                             </div>
                           )}
@@ -580,20 +572,24 @@ const ProviderServiceDetails = () => {
             )}
             {/* FAQS Section */}
             {serviceData?.faqs?.length > 0 && (
-              <div className="flex flex-col">
-                <span className="text-lg lg:text-2xl font-extrabold my-7">
-                  {t("faqs")}{" "}
-                </span>
-                <div className="faqs w-full flex flex-col gap-4">
-                  {serviceData?.faqs.map((faq, index) => (
-                    <FaqAccordion faq={faq} key={index} />
-                  ))}
+              <>
+                <div className="flex flex-col">
+                  <span className="text-lg lg:text-2xl font-extrabold my-7">
+                    {t("faqs")}{" "}
+                  </span>
+                  <div className="faqs w-full flex flex-col gap-4">
+                    {serviceData?.faqs.map((faq, index) => (
+                      <FaqAccordion faq={faq} key={index} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+                <hr className="text-gray-300 my-7" />
+              </>
             )}
-            <hr className="text-gray-300 my-7" />
             <div className="service-reviews">
-              <span className="text-2xl font-semibold">{t("ratingAndReviews")}</span>
+              <span className="text-2xl font-semibold">
+                {t("ratingAndReviews")}
+              </span>
               <div className="grid grid-cols-12 border rounded-md mt-6 px-[18px] py-4 gap-4">
                 <div className="col-span-12 md:col-span-3">
                   <div className="flex flex-col items-center justify-center w-full h-full light_bg_color rounded-md px-4 py-6">
@@ -608,17 +604,22 @@ const ProviderServiceDetails = () => {
                 </div>
                 <div className="col-span-12 md:col-span-9">
                   {ratingData.map((item) => {
-                    const progressPercentage = (item.count / totalRating) * 100;
+                    const progressPercentage =
+                      totalRating > 0
+                        ? Math.round((item.count / totalRating) * 100) // Round to nearest whole number
+                        : 0;
+
                     return (
                       <div className="rating_progress mb-2" key={item.rating}>
                         <div className="flex gap-4 items-center">
                           <span>{item.rating}</span>
                           <Progress
                             value={progressPercentage}
-                            className="progress flex-1 h-2 mx-2 rounded-lg "
+                            className="progress flex-1 h-2 mx-2 rounded-lg"
                             style={{ fill: "#4caf50" }}
                           />
-                          <span className="">{item.count}</span>
+                          <span>{progressPercentage}%</span>{" "}
+                          {/* Display whole number percentage */}
                         </div>
                       </div>
                     );

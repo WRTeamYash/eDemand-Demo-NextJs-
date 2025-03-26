@@ -13,6 +13,7 @@ import { useTranslation } from "@/components/Layout/TranslationContext";
 import { selectBookingStatus } from "@/redux/reducers/helperSlice";
 import { useSelector } from "react-redux";
 import withAuth from "@/components/Layout/withAuth";
+import { isMobile } from "@/utils/Helper";
 
 const GeneralBookings = () => {
   const t = useTranslation();
@@ -68,20 +69,21 @@ const GeneralBookings = () => {
       <BreadCrumb
         firstEle={t("generalBookings")}
         firstEleLink="/general-bookings"
+        isMobile={isMobile}
       />
-      <section className="profile_sec my-12">
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Grid layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-9">
               <div className="flex flex-col gap-6">
-                <div className="page-headline text-2xl sm:text-3xl font-semibold">
+                <div className="page-headline text-xl md:text-2xl sm:text-3xl font-semibold border-b pb-3 md:pb-0 md:border-none">
                   <span>{t("bookings")}</span>
                 </div>
                 <div>

@@ -1,11 +1,19 @@
-import { t, useGoogleMapsLoader } from "@/utils/Helper";
+import {
+  darkThemeStyles,
+  t,
+  useGoogleMapsLoader,
+  useIsDarkMode,
+} from "@/utils/Helper";
 import { GoogleMap, MarkerF } from "@react-google-maps/api";
 import React, { useState, useEffect, useRef } from "react";
 import { GrLocation } from "react-icons/gr";
 import { useTranslation } from "../Layout/TranslationContext";
+import DOMPurify from "dompurify";
+
 
 const ProviderAboutTab = ({ providerData }) => {
-  const t = useTranslation()
+  const t = useTranslation();
+  const isDarkMode = useIsDarkMode();
 
   const { isLoaded, loadError } = useGoogleMapsLoader();
 
@@ -20,7 +28,8 @@ const ProviderAboutTab = ({ providerData }) => {
   ];
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [shortDescription, setShortDescription] = useState("");
+  const [fullDescription, setFullDescription] = useState("");
   const aboutRef = useRef(null);
 
   // Convert time from 24-hour format to 12-hour format
@@ -37,9 +46,9 @@ const ProviderAboutTab = ({ providerData }) => {
     hours:
       providerData[`${day}_is_open`] === "1"
         ? `${convertTo12HourFormat(
-          providerData[`${day}_opening_time`]
-        )} - ${convertTo12HourFormat(providerData[`${day}_closing_time`])}`
-        : "Closed",
+            providerData[`${day}_opening_time`]
+          )} - ${convertTo12HourFormat(providerData[`${day}_closing_time`])}`
+        : t("closed"),
   }));
 
   const todayIndex = new Date().getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
@@ -47,19 +56,26 @@ const ProviderAboutTab = ({ providerData }) => {
 
   const todayHours =
     today.hours !== "Closed"
-      ? today.hours.replace(/:00/g, "") // Optional: remove ":00" from times
-      : "Closed";
+      ? today.hours // Optional: remove ":00" from times
+      : t("closed");
 
-  // Check if About Us section is overflowing
-  useEffect(() => {
-    if (aboutRef.current) {
-      const lineHeight = parseFloat(
-        getComputedStyle(aboutRef.current).lineHeight
-      );
-      const maxLinesHeight = lineHeight * 4; // Height for 4 lines
-      setIsOverflowing(aboutRef.current.scrollHeight > maxLinesHeight);
-    }
-  }, [providerData]);
+      useEffect(() => {
+        if (providerData?.long_description) {
+          const sanitizedHTML = DOMPurify.sanitize(providerData.long_description);
+      
+          // Convert HTML to plain text to measure length
+          const tempElement = document.createElement("div");
+          tempElement.innerHTML = sanitizedHTML;
+
+          setFullDescription(sanitizedHTML);
+          setShortDescription(
+            sanitizedHTML.length > 600
+              ? `${sanitizedHTML.substring(0, 600)}...`
+              : sanitizedHTML
+          );
+        }
+      }, [providerData]);
+      
 
   // Error or loading states
   if (loadError) {
@@ -78,40 +94,40 @@ const ProviderAboutTab = ({ providerData }) => {
   return (
     <div className="space-y-6">
       {/* Company Information */}
-      {providerData?.about && (
-        <div className="rounded-lg">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-            {t("companyInformation")}
-          </h2>
-          <div className="space-y-4">
-            <p
-              ref={aboutRef}
-              className={`text-sm description_color leading-relaxed ${!isExpanded ? "line-clamp-4" : ""
-                } transition-all duration-300`}
+      {providerData?.long_description && (
+      <div className="rounded-lg">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+          {t("companyInformation")}
+        </h2>
+        <div className="space-y-4">
+          <p
+            className="text-sm description_color leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: isExpanded ? fullDescription : shortDescription,
+            }}
+          ></p>
+
+          {fullDescription.length > shortDescription.length && (
+            <button
+              className="text-sm hover:underline"
+              onClick={() => setIsExpanded(!isExpanded)}
             >
-              {providerData?.about}
-            </p>
-            {isOverflowing && (
-              <button
-                className="text-sm hover:underline"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? "View Less" : "View More"}
-              </button>
-            )}
-          </div>
+              {isExpanded ? t("viewLess") : t("viewMore")}
+            </button>
+          )}
         </div>
-      )}
+      </div>
+    )}
       {/* Business Hours */}
       <div className="rounded-lg">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center flex-wrap gap-2 mb-4">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             {t("bussinessHours")}
           </h2>
           <div className="text-sm text-nowrap ">
             <span className="description_color">{t("today")} </span>
             <span className="primary_text_color">
-              {todayHours !== "Closed" ? todayHours : "Closed"}
+              {todayHours !== "Closed" ? todayHours : t("closed")}
             </span>
           </div>
         </div>
@@ -143,6 +159,10 @@ const ProviderAboutTab = ({ providerData }) => {
                 mapContainerClassName="w-full h-full"
                 center={center}
                 zoom={15}
+                options={{
+                  streetViewControl: false,
+                  styles: isDarkMode ? darkThemeStyles : [],
+                }}
               >
                 {providerData?.latitude && providerData?.longitude && (
                   <MarkerF position={center} />
@@ -157,7 +177,9 @@ const ProviderAboutTab = ({ providerData }) => {
               </div>
               <div>
                 <p className="text-sm primary_text_color">{t("address")}</p>
-                <p className="text-xs sm:text-base md:text-lg font-medium">{providerData?.address}</p>
+                <p className="text-xs sm:text-base md:text-lg font-medium">
+                  {providerData?.address}
+                </p>
               </div>
             </div>
           </div>

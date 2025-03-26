@@ -13,7 +13,7 @@ const NearbyProviderCardSkeleton = () => {
           </div>
   
           {/* Skeleton Details */}
-          <div className="ml-2 md:ml-4 flex-grow space-y-2">
+          <div className="ml-2 rtl:mr-2 md:ml-4 flex-grow space-y-2">
             <Skeleton className="h-5 w-full" />
             <Skeleton className="h-4 w-full" />
             <div className="flex flex-wrap md:flex-nowrap gap-2 mt-2">

@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic";
 import MetaData from "@/components/Meta/MetaData";
+import dynamic from "next/dynamic";
 
 const ProviderDetailsPage = dynamic(
   () =>
@@ -8,6 +8,7 @@ const ProviderDetailsPage = dynamic(
     ),
   { ssr: false }
 );
+
 const index = () => {
   return (
     <>

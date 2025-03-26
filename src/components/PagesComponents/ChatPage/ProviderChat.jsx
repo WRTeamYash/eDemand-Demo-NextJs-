@@ -4,7 +4,6 @@ import React from 'react'
 import { FaPlus } from 'react-icons/fa'
 import { RiSendPlaneFill } from 'react-icons/ri'
 import noChat from '../../../assets/chat.svg'
-import { placeholderImage } from '@/utils/Helper'
 import CustomImageTag from '@/components/ReUseableComponents/CustomImageTag'
 import { useRTL } from '@/utils/Helper'
 
@@ -18,7 +17,10 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
             {
                 selectedChatTab && Object.keys(selectedChatTab).length > 0 ? <>
                     <div className='p-4 flex items-center border-b border-gray-300 gap-3'>
-                        <CustomImageTag className='!h-10 !w-10 rounded-full object-cover' src={selectedChatTab?.image} onError={placeholderImage} alt={selectedChatTab?.partner_name} />
+                        <CustomImageTag 
+                        className='!h-10 !w-10 rounded-full object-cover' 
+                        src={selectedChatTab?.image} 
+                        alt={selectedChatTab?.partner_name} />
                         <div className='flex flex-col gap-1 items-start'>
                             <h2 className=''>{selectedChatTab?.partner_name}</h2>
                             {selectedChatTab?.booking_id !== null ? (
@@ -67,7 +69,7 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
             {/* send msg container  */}
             {
                 selectedChatTab?.order_status === "cancelled" || selectedChatTab?.order_status === "completed" ? <div className='light_bg_color text-center p-2'>
-                    <h6>Sorry, you can't send a message to the provider since the booking has been cancelled or completed. If you have any further questions or need assistance, please feel free to contact our customer support team.</h6>
+                    <h6>{t("sorryYouCantSendMessage")}</h6>
                 </div>
                     :
                     selectedChatTab &&
@@ -77,7 +79,7 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
 
                             attachedFiles?.length > 0 &&
                             <div className='absolute bg-gray-100 w-full overflow-x-auto p-2 bottom-[70px] selectedFiles mb-1'>
-                                <span>Selected Files :</span>
+                                <span>{t("selectedFiles")}</span>
                                 <div className='flex items-center gap-2 mt-2'>
                                     {attachedFiles.map((file, index) => renderFilePreview(file, index))}
                                 </div>
@@ -92,7 +94,7 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
                                 multiple
                             />
                             <button className='primary_bg_color rounded-full h-[30px] w-[30px] flex justify-center text-white items-center ' onClick={() => document.getElementById('file-attachment').click()}><FaPlus size={18} /></button>
-                            <input className='w-[56%] sm:w-[80%] xl:w-full border p-2 rounded-lg' type='text' value={message} onChange={handleMessageChange} placeholder='Type a message...' />
+                            <input className='w-[56%] sm:w-[80%] xl:w-full border p-2 rounded-lg' type='text' value={message} onChange={handleMessageChange} placeholder={t("typeMessage")} />
                         </div>
                         <div className='h-full flex items-center justify-end col-span-2 gap-2'>
                             <span className='text-gray-400'> {message.length}/{MaxCharactersInTextMessage}</span>

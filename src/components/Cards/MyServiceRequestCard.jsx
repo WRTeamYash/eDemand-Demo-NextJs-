@@ -13,16 +13,16 @@ const MyServiceRequestCard = ({ data }) => {
   const remainingBidsCount = data?.total_bids > 3 ? data?.total_bids - 3 : 0;
   
   return (
-    <div className="border rounded-lg p-4 flex flex-col gap-4 card_bg shadow-sm">
+    <div className="border rounded-lg p-3 md:p-4 flex flex-col gap-4 card_bg shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="background_color text-sm font-medium px-2 py-1 rounded-md">
             {data?.category_name}
           </span>
         </div>
         <span className="text-sm font-medium" style={{ color: statusColor }}>
-          {statusName}
+          {t(statusName)}
         </span>
       </div>
 
@@ -33,7 +33,7 @@ const MyServiceRequestCard = ({ data }) => {
       <div>
         <p className="description_color text-sm">{t("budget")}</p>
         <p className="font-medium">
-          {showPrice(data?.min_price)} to {showPrice(data?.max_price)}
+          {showPrice(data?.min_price)} {t("to")} {showPrice(data?.max_price)}
         </p>
       </div>
 
@@ -41,7 +41,7 @@ const MyServiceRequestCard = ({ data }) => {
       <hr className="description_color" />
 
       {/* Bids */}
-      <div className="flex items-center justify-between">
+      <div className="flex md:items-center justify-between flex-col md:flex-row gap-3">
         {data?.bidders.length > 0 ? (
           <div className="flex items-center gap-2">
             <p className="text-sm primary_text_color font-medium">{t("bids")}</p>
@@ -68,7 +68,7 @@ const MyServiceRequestCard = ({ data }) => {
           <p className="description_color">{t("noBidsAvailable")}</p>
         )}
         <Link href={`/my-service-request-details/${data?.id}`}>
-        <button className="light_bg_color primary_text_color px-4 py-2 rounded-md font-medium">
+        <button className="light_bg_color primary_text_color px-4 py-2 rounded-md font-medium w-full">
           {t("viewDetails")}
         </button>
         </Link>

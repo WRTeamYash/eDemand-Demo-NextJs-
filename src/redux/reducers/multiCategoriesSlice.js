@@ -12,21 +12,21 @@ const multiCategoriesSlice = createSlice({
     addCategory: (state, action) => {
       const category = action.payload; // { id, name, slug }
       // Avoid duplicate categories
-      if (!state.selectedCategories.find((cat) => cat?.id === category?.id)) {
+      if (!state.selectedCategories.find((cat) => cat?.slug === category?.slug)) {
         state.selectedCategories.push(category);
       }
     },
     removeCategory: (state, action) => {
-      const categoryId = action.payload;
+      const categorySlug = action.payload;
       state.selectedCategories = state.selectedCategories.filter(
-        (cat) => cat.id !== categoryId
+        (cat) => cat.slug !== categorySlug
       );
     },
     removeCategoryBySlug: (state, action) => {
       const categorySlug = action.payload;
       // Find the index of the category with the matching slug
       const index = state.selectedCategories.findIndex(
-        (cat) => cat.id === categorySlug
+        (cat) => cat.slug === categorySlug
       );
 
       if (index !== -1) {

@@ -23,7 +23,7 @@ const CustomBookingCard = ({ data }) => {
             className="ml-auto text-sm font-normal capitalize"
             style={{ color: statusColor }}
           >
-            {statusName}
+             {t(statusName)}
           </span>
         </div>
 
@@ -42,7 +42,7 @@ const CustomBookingCard = ({ data }) => {
           <span>
             {t("scheduleAt")}{" "}
             <span className="primary_text_color">
-              {data?.address_id === "0" ? "Store" : "Doorstep"}
+              {data?.address_id === "0" ? t("store") : t("doorstep")}
             </span>
           </span>
         </div>
@@ -64,12 +64,14 @@ const CustomBookingCard = ({ data }) => {
             )}
           </div>
           {/* OTP Section */}
+          {data?.is_otp_enalble === "1" &&
           <div className="flex items-center justify-between w-full sm:justify-end gap-1">
             <span className="description_color text-sm">{t("otp")}</span>
             <div className="px-4 py-2 rounded-md text-sm font-normal background_color">
               {data?.otp}
             </div>
           </div>
+          }
         </div>
       </div>
     </div>

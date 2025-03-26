@@ -4,7 +4,7 @@ import { useGoogleMapsLoader } from "@/utils/Helper";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdLocationOn } from "react-icons/md";
-import Map from "../PagesComponents/StaticPages/LocationMapBox/GoogleMap";
+import Map from "./LocationMapBox/GoogleMap.jsx";
 import {
   locationAddressData,
   setLatitude,

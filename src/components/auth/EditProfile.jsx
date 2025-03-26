@@ -1,9 +1,9 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import { User } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MdClose } from "react-icons/md";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
-import { placeholderImage } from "@/utils/Helper";
 import {
   clearAuthData,
   setToken,
@@ -205,8 +205,6 @@ const EditProfile = ({ open, close, isEditProfile, userData }) => {
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                     {profileImage ? (
                       <CustomImageTag
-                        width={0}
-                        height={0}
                         src={
                           profileImage instanceof File
                             ? URL.createObjectURL(profileImage)
@@ -214,7 +212,6 @@ const EditProfile = ({ open, close, isEditProfile, userData }) => {
                         }
                         alt="profile"
                         className="h-full w-full rounded-full"
-                        onError={placeholderImage}
                       />
                     ) : (
                       <User className="description_color" size={24} />
@@ -272,7 +269,7 @@ const EditProfile = ({ open, close, isEditProfile, userData }) => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Enter Name"
+                placeholder={t("enterName")}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-0 focus:border_color focus:light_bg_color focus:primary_text_color transition-all duration-300"
               />
             </div>
@@ -300,8 +297,8 @@ const EditProfile = ({ open, close, isEditProfile, userData }) => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                placeholder="Enter Phone Number"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-0 focus:border_color focus:light_bg_color focus:primary_text_color transition-all duration-300"
+                placeholder={t("enterPhoneNumber")}
+                className="rtl:text-right ltr:text-left w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-0 focus:border_color focus:light_bg_color focus:primary_text_color transition-all duration-300"
               />
             </div>
 
@@ -328,7 +325,7 @@ const EditProfile = ({ open, close, isEditProfile, userData }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter Email"
+                placeholder={t("enterEmail")}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-0 focus:border_color focus:light_bg_color focus:primary_text_color transition-all duration-300"
               />
             </div>

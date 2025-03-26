@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { IoClose } from "react-icons/io5";
 import CustomImageTag from "../CustomImageTag";
-import { placeholderImage } from "@/utils/Helper";
 import { MdClose } from "react-icons/md";
 
 const RateServiceDialog = ({ 
@@ -101,7 +100,7 @@ const RateServiceDialog = ({
             <DialogContent className="sm:max-w-[425px]">
                 <div className="flex justify-between items-center">
                     <DialogTitle className="text-xl font-semibold">
-                        {isEditMode ? t("editReview") : t("rateService")} - {selectedServiceId}
+                        {isEditMode ? t("editReview") : t("rateService")}
                     </DialogTitle>
                     <MdClose size={20} className="cursor-pointer" onClick={onClose} />
                 </div>
@@ -144,9 +143,6 @@ const RateServiceDialog = ({
                                 <CustomImageTag
                                     src={preview}
                                     alt="preview"
-                                    width={80}
-                                    height={80}
-                                    onError={placeholderImage}
                                     className="w-20 h-20 object-cover rounded-lg"
                                 />
                                 <button
@@ -193,7 +189,7 @@ const RateServiceDialog = ({
                 {/* Submit Button */}
                 <Button
                     onClick={handleSubmit}
-                    className="w-full primary_bg_color text-white disabled:!bg-gray-300 disabled:!description_color disabled:cursor-not-allowed"
+                    className="w-full primary_bg_color text-white disabled:!bg-gray-300 disabled:!description_color disabled:cursor-not-allowed dark:disabled:text-black"
                     disabled={!formData.rating || !formData.comment.trim()}
                 >
                     {t("submitReview")}

@@ -7,7 +7,6 @@ const ChatApp = () => {
     const [notificationData, setNotificationData] = useState(null);
     const handleNotificationReceived = (data) => {
         setNotificationData(data);
-        console.log(data,'gggg')
     };
     useEffect(() => { }, [notificationData])
     return (

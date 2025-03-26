@@ -17,28 +17,49 @@ const BreadCrumb = ({
   firstEleLink,
   SecEleLink,
   thirdEleLink,
+  isMobile,
 }) => {
   const t = useTranslation();
   const isRTL = useRTL();
-  const router = useRouter(); // Get the current route
+  const router = useRouter();
 
   // Helper function to check if the link matches the current route
   const isActive = (link) => router.asPath === link;
 
+  const getClassName = (link) => {
+    const baseClass = "text-sm md:text-base font-normal";
+    if (isActive(link)) {
+      return `${baseClass} primary_text_color cursor-default pointer-events-none`;
+    }
+    return `${baseClass} hover:primary_text_color`;
+  };
+
+  const BreadcrumbLink = ({ link, children, title }) =>
+    isActive(link) ? (
+      <span className={getClassName(link)} title={title}>
+        {children}
+      </span>
+    ) : (
+      <Link href={link} className={getClassName(link)} title={title}>
+        {children}
+      </Link>
+    );
+
   return (
-    <div className="custom-breadcrumb py-4 my-6 light_bg_color">
+    <div className="custom-breadcrumb py-4 my-6 light_bg_color commonMT">
       <div className="container mx-auto">
         <Breadcrumb className="flex flex-wrap items-center gap-1 sm:gap-2 [&_li]:list-none [&_ol]:list-none">
           {/* Home Breadcrumb */}
           <BreadcrumbItem>
-            <Link
-              href="/"
-              className={`text-sm md:text-base font-normal ${isActive("/") ? "primary_text_color" : "hover:primary_text_color"
-                }`}
-              title={t("home")}
-            >
-              {t("home")}
-            </Link>
+            {isMobile && isMobile() ? (
+              <Link href="/profile" title={t("profile")}>
+                {t("profile")}
+              </Link>
+            ) : (
+              <BreadcrumbLink link="/" title={t("home")}>
+                {t("home")}
+              </BreadcrumbLink>
+            )}
           </BreadcrumbItem>
 
           {/* First Element */}
@@ -49,16 +70,9 @@ const BreadCrumb = ({
               </BreadcrumbSeparator>
               <BreadcrumbItem>
                 {firstEleLink ? (
-                  <Link
-                    href={firstEleLink}
-                    className={`text-sm md:text-base font-normal ${isActive(firstEleLink)
-                        ? "primary_text_color"
-                        : "hover:primary_text_color"
-                      }`}
-                    title={firstEle}
-                  >
+                  <BreadcrumbLink link={firstEleLink} title={firstEle}>
                     {firstEle}
-                  </Link>
+                  </BreadcrumbLink>
                 ) : (
                   <span className="text-sm md:text-base font-normal description_color">
                     {firstEle}
@@ -76,16 +90,9 @@ const BreadCrumb = ({
               </BreadcrumbSeparator>
               <BreadcrumbItem>
                 {SecEleLink ? (
-                  <Link
-                    href={SecEleLink}
-                    className={`text-sm text-nowrap md:text-base font-normal ${isActive(SecEleLink)
-                        ? "primary_text_color"
-                        : "hover:primary_text_color"
-                      }`}
-                    title={secEle}
-                  >
+                  <BreadcrumbLink link={SecEleLink} title={secEle}>
                     {secEle}
-                  </Link>
+                  </BreadcrumbLink>
                 ) : (
                   <span className="text-sm md:text-base font-normal description_color">
                     {secEle}
@@ -103,16 +110,9 @@ const BreadCrumb = ({
               </BreadcrumbSeparator>
               <BreadcrumbItem>
                 {thirdEleLink ? (
-                  <Link
-                    href={thirdEleLink}
-                    className={`text-sm text-nowrap md:text-base font-normal ${isActive(thirdEleLink)
-                        ? "primary_text_color"
-                        : "hover:primary_text_color"
-                      }`}
-                    title={thirdEle}
-                  >
+                  <BreadcrumbLink link={thirdEleLink} title={thirdEle}>
                     {thirdEle}
-                  </Link>
+                  </BreadcrumbLink>
                 ) : (
                   <span className="text-sm md:text-base font-normal description_color">
                     {thirdEle}

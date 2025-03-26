@@ -20,17 +20,9 @@ export const get_settings = async () => {
 };
 
 // 2. Get places api for web
-/**
- * Fetches places for the given address for web
- *
- * @param {object} options - Options for the request
- * @param {string} options.address - Address for which places need to be fetched
- *
- * @returns {Promise<object>} - Response object containing places data
- */
-export const getPlacesForWebApi = async ({ address }) => {
+export const getPlacesForWebApi = async ({ input }) => {
   try {
-    const url = `${apiEndPoints.getPlacesForWeb}?address=${address}`;
+    const url = `${apiEndPoints.getPlacesForWeb}?input=${input}`;
     const response = await api.get(url);
 
     if (response.status === 401) {
@@ -44,12 +36,22 @@ export const getPlacesForWebApi = async ({ address }) => {
     throw error;
   }
 };
-
-// 3. Get places Deatils api
-export const getPlacesDetailsForWebApi = async ({ latitude, longitude }) => {
+// 3. Get Places Details API
+export const getPlacesDetailsForWebApi = async ({
+  latitude,
+  longitude,
+  place_id,
+}) => {
   try {
-    // Construct the URL with query parameters
-    const url = `${apiEndPoints.getPlacesDeatilsForWeb}?latitude=${latitude}&longitude=${longitude}`;
+    // Build query parameters dynamically
+    const params = new URLSearchParams();
+    if (latitude) params.append("latitude", latitude);
+    if (longitude) params.append("longitude", longitude);
+    if (place_id) params.append("place_id", place_id);
+
+    // Construct the URL with valid query parameters
+    const url = `${apiEndPoints.getPlacesDeatilsForWeb}?${params.toString()}`;
+
     const response = await api.get(url); // Using the GET request with the URL
 
     if (response.status === 401) {
@@ -63,7 +65,6 @@ export const getPlacesDetailsForWebApi = async ({ latitude, longitude }) => {
     throw error;
   }
 };
-
 // 4. landing page api
 export const getWebLandingPageApi = async () => {
   const formData = new FormData();
@@ -105,6 +106,7 @@ export const getCategoriesApi = async ({
   latitude = "",
   longitude = "",
   category_id = "",
+  slug = "",
   search = null,
   is_landing_page = 0,
 }) => {
@@ -113,6 +115,7 @@ export const getCategoriesApi = async ({
     formData.append("latitude", latitude);
     formData.append("longitude", longitude);
     formData.append("category_id", category_id);
+    formData.append("slug", slug);
     formData.append("is_landing_page", is_landing_page);
     if (search) {
       formData.append("search", search);
@@ -161,11 +164,13 @@ export const getProviders = async ({
   id = "",
   search = "",
   category_id = 0,
+  slug = "",
   subcategory_id = 0,
   order = "asc",
   filter = null,
   limit = "",
   offset = "",
+  category_slug = "",
 }) => {
   try {
     const formData = new FormData();
@@ -179,6 +184,9 @@ export const getProviders = async ({
     }
     if (category_id > 0) {
       formData.append("category_id", category_id);
+    }
+    if (slug) {
+      formData.append("slug", slug);
     }
     if (subcategory_id > 0) {
       formData.append("subcategory_id", subcategory_id);
@@ -195,6 +203,9 @@ export const getProviders = async ({
     // if (offset) {
     formData?.append("offset", offset);
     // }
+    if (category_slug) {
+      formData?.append("category_slug", category_slug);
+    }
 
     const response = await api.post(apiEndPoints.getProviders, formData);
 
@@ -281,6 +292,8 @@ export const allServices = async ({
   offset = "",
   limit = "",
   search = "",
+  slug = "",
+  provider_slug = "",
 }) => {
   try {
     const formData = new FormData();
@@ -307,6 +320,12 @@ export const allServices = async ({
     }
     if (search) {
       formData.append("search", search);
+    }
+    if (slug) {
+      formData.append("slug", slug);
+    }
+    if (provider_slug) {
+      formData.append("provider_slug", provider_slug);
     }
 
     const response = await api.post(apiEndPoints.getServices, formData);
@@ -396,6 +415,7 @@ export const getSubCategory = async ({
   latitude = "",
   longitude = "",
   category_id = "",
+  slug = "",
   title = "",
 }) => {
   try {
@@ -403,6 +423,7 @@ export const getSubCategory = async ({
     formData.append("latitude", latitude);
     formData.append("longitude", longitude);
     formData.append("category_id", category_id);
+    formData.append("slug", slug);
     if (title) formData.append("title", title);
 
     const response = await api.post(apiEndPoints.getSubCategories, formData);
@@ -426,14 +447,32 @@ export const getRatings = async ({
   limit = "",
   offset = "",
   order = "desc",
+  provider_slug = "",
+  slug = "",
 }) => {
   try {
     const formData = new FormData();
-    if (partner_id) formData.append("partner_id", partner_id);
-    if (service_id) formData.append("service_id", service_id);
-    if (limit) formData.append("limit", limit);
-    if (offset) formData.append("offset", offset);
-    if (order) formData.append("order", order);
+    if (partner_id) {
+      formData.append("partner_id", partner_id);
+    }
+    if (service_id) {
+      formData.append("service_id", service_id);
+    }
+    if (limit) {
+      formData.append("limit", limit);
+    }
+    if (offset) {
+      formData.append("offset", offset);
+    }
+    if (order) {
+      formData.append("order", order);
+    }
+    if (provider_slug) {
+      formData.append("provider_slug", provider_slug);
+    }
+    if (slug) {
+      formData.append("slug", slug);
+    }
 
     const response = await api.post(apiEndPoints.getRating, formData);
 
@@ -445,11 +484,17 @@ export const getRatings = async ({
 };
 
 // 16. get promo codes api
-export const getPromoCodeApi = async ({ partner_id = 0 }) => {
+export const getPromoCodeApi = async ({
+  partner_id = 0,
+  provider_slug = "",
+}) => {
   try {
     const formData = new FormData();
     if (partner_id) {
       formData.append("partner_id", partner_id);
+    }
+    if (provider_slug) {
+      formData.append("provider_slug", provider_slug);
     }
 
     const response = await api.post(apiEndPoints.getPromoCodes, formData);
@@ -796,7 +841,6 @@ export const checkSlotsApi = async ({
     if (order_id) formData.append("order_id", order_id);
     if (custom_job_request_id)
       formData.append("custom_job_request_id", custom_job_request_id);
-
     const response = await api.post(apiEndPoints.checkAvailableSlot, formData);
 
     return response?.data;
@@ -813,6 +857,7 @@ export const providerAvailableApi = async ({
   isCheckout = 0,
   custom_job_request_id = "",
   bidder_id = "",
+  order_id = "",
 }) => {
   try {
     const formData = new FormData();
@@ -824,6 +869,9 @@ export const providerAvailableApi = async ({
     }
     if (bidder_id) {
       formData.append("bidder_id", bidder_id);
+    }
+    if (order_id) {
+      formData.append("order_id", order_id);
     }
 
     const response = await api.post(
@@ -841,6 +889,7 @@ export const providerAvailableApi = async ({
 // 29. get orders api
 export const getOrdersApi = async ({
   id = "",
+  slug = "",
   limit = "",
   offset = "",
   status = "",
@@ -855,6 +904,9 @@ export const getOrdersApi = async ({
     }
     if (id) {
       formData.append("id", id);
+    }
+    if (slug) {
+      formData.append("slug", slug);
     }
     if (offset) {
       formData.append("offset", offset);

@@ -4,9 +4,9 @@ import Layout from "../Layout/Layout";
 import BreadCrumb from "../ReUseableComponents/BreadCrumb";
 import { IoStorefrontOutline, IoTimeOutline } from "react-icons/io5";
 import { BsCalendar3Week, BsHouse } from "react-icons/bs";
-import { FaCircleCheck, FaCirclePlus, FaLocationDot } from "react-icons/fa6";
+import { FaCirclePlus, FaLocationDot } from "react-icons/fa6";
 import { MdClose, MdModeEdit } from "react-icons/md";
-import { BiRightArrow, BiSolidEdit } from "react-icons/bi";
+import { BiSolidEdit } from "react-icons/bi";
 import stripe from "../../assets/stripe.png";
 import paypal from "../../assets/paypal.png";
 import paystack from "../../assets/paystack.png";
@@ -14,7 +14,7 @@ import flutterwave from "../../assets/flutterwave.png";
 import razorpay from "../../assets/razorpay.png";
 import cod from "../../assets/cod.png";
 import SelectDateAndTimeDrawer from "../ReUseableComponents/Drawers/SelectDateAndTimeDrawer";
-import { loadStripeApiKey, placeholderImage, showPrice } from "@/utils/Helper";
+import { loadStripeApiKey, showPrice } from "@/utils/Helper";
 import AddressDrawer from "../ReUseableComponents/Drawers/AddressDrawer";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import { useRouter } from "next/router";
@@ -22,11 +22,12 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   clearCart,
   clearChekoutData,
-  currentCartProvider,
   setDilveryDetails,
   setPromocodeDiscount,
   selectCustomJobData,
   selectCartProvider,
+  setAppliedCoupon,
+  selectAppliedCoupon,
 } from "@/redux/reducers/cartSlice";
 import { FaChevronRight, FaPercentage } from "react-icons/fa";
 import {
@@ -49,6 +50,9 @@ import PaystackPop from "@paystack/inline-js";
 import withAuth from "../Layout/withAuth";
 import { selectReorderMode } from "@/redux/reducers/reorderSlice";
 
+import { setReorderMode } from "@/redux/reducers/reorderSlice";
+import MiniLoader from "../ReUseableComponents/MiniLoader";
+
 const stripeLoadKey = loadStripeApiKey();
 const stripePromise = loadStripe(stripeLoadKey);
 
@@ -66,10 +70,6 @@ const Checkout = () => {
     isReorderMode ? reorderState.provider : selectCartProvider(state)
   );
 
-  const cartItems = useSelector((state) =>
-    isReorderMode ? reorderState.items : state.cart.items
-  );
-
   const dilveryDetails = useSelector((state) => state.cart.dilveryDetails);
   const settingsData = useSelector((state) => state?.settingsData);
   const userDetails = useSelector((state) => state?.userData?.data);
@@ -83,13 +83,19 @@ const Checkout = () => {
   const availableOnStore = currentCartProviderData?.at_store === "1";
 
   const [serviceType, setServiceType] = useState(
-    dilveryDetails?.dilveryAddressType ? dilveryDetails?.dilveryAddressType : ""
+    isReorderMode
+      ? reorderState.provider?.dilveryAddressType
+      : dilveryDetails?.dilveryAddressType
+        ? dilveryDetails?.dilveryAddressType
+        : ""
   );
 
   const [paymentOption, setPaymentOption] = useState(
-    dilveryDetails?.dilevryPymentMethod
-      ? dilveryDetails?.dilevryPymentMethod
-      : ""
+    isReorderMode
+      ? reorderState.provider?.dilevryPymentMethod
+      : dilveryDetails?.dilevryPymentMethod
+        ? dilveryDetails?.dilevryPymentMethod
+        : ""
   );
 
   const [note, setNote] = useState(
@@ -103,8 +109,8 @@ const Checkout = () => {
   const [defaultAddress, setDefaultAddress] = useState(null);
   const [offers, setOffers] = useState([]);
   const [offersModalOpen, setOffersModalOpen] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState({});
   const [addresses, setAddresses] = useState([]);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
   // payment variables
   const paymentSettings = settingsData?.settings?.payment_gateways_settings;
@@ -176,8 +182,9 @@ const Checkout = () => {
   );
 
   const customJobData = useSelector(selectCustomJobData);
+  const isCustomJob = customJobData?.custom_job_request_id ? true : false;
 
-  const isCustomJob = Boolean(customJobData?.custom_job_request_id);
+  const appliedCoupon = useSelector(selectAppliedCoupon);
 
   const handleActiveNotes = () => setActiveNotes(true);
 
@@ -206,19 +213,24 @@ const Checkout = () => {
 
   const handleServiceType = (type) => {
     setServiceType(type);
-    if (type === "home") {
+
+    dispatch(
+      setDilveryDetails({
+        ...dilveryDetails,
+        dilveryAddressType: type,
+        ...(type === "store" ? { dilevryLocation: {} } : {}), // Reset location for store
+      })
+    );
+
+    if (isReorderMode) {
       dispatch(
-        setDilveryDetails({
-          ...dilveryDetails, // Keep the existing delivery details
-          dilveryAddressType: type, // Update only the address type,
-        })
-      );
-    } else if (type === "store") {
-      dispatch(
-        setDilveryDetails({
-          ...dilveryDetails,
-          dilveryAddressType: type, // Keep the existing delivery details
-          dilevryLocation: {}, // Update dilevryLocation with the new address
+        setReorderMode({
+          ...reorderState,
+          provider: {
+            ...reorderState.provider,
+            dilveryAddressType: type,
+            ...(type === "store" ? { dilevryLocation: {} } : {}), // Reset location for store
+          },
         })
       );
     }
@@ -235,6 +247,17 @@ const Checkout = () => {
             dilveryAddressType: "home",
           })
         );
+        if (isReorderMode) {
+          dispatch(
+            setReorderMode({
+              ...reorderState,
+              provider: {
+                ...reorderState.provider,
+                dilveryAddressType: "home",
+              },
+            })
+          );
+        }
       } else if (availableOnHome) {
         // If only home is available
         setServiceType("home");
@@ -256,7 +279,7 @@ const Checkout = () => {
         );
       }
     }
-  }, [availableOnHome, availableOnStore, dilveryDetails]);
+  }, [availableOnHome, availableOnStore, dilveryDetails, reorderState]);
 
   useEffect(() => {
     // Automatically set the first available payment method if not already set
@@ -308,9 +331,10 @@ const Checkout = () => {
       if (res.error === false) {
         const discountAmount = res.data[0]?.final_discount || 0;
 
-        // Update the cart data with the new final total
+        // Store both discount amount and coupon details in Redux
         dispatch(setPromocodeDiscount(Number(discountAmount)));
-        setAppliedCoupon(offer);
+        dispatch(setAppliedCoupon(offer));
+        
         setOffersModalOpen(false);
       } else {
         toast.error(res.message);
@@ -321,8 +345,8 @@ const Checkout = () => {
   };
 
   const handleRemove = () => {
-    setAppliedCoupon({});
-    dispatch(setPromocodeDiscount(0));
+    dispatch(setAppliedCoupon(null)); // Clear the coupon in Redux
+    dispatch(setPromocodeDiscount(0)); // Clear the discount
   };
 
   const handlePaymentOption = (method) => {
@@ -421,6 +445,7 @@ const Checkout = () => {
         });
 
         if (res.error === false) {
+          setIsProcessingCheckout(false);
           toast.success(t("paymentSuccessWithCOD"));
 
           if (isReorderMode) {
@@ -429,13 +454,15 @@ const Checkout = () => {
             dispatch(clearCart());
           }
           dispatch(clearChekoutData());
-          router.push(`/booking/${orderId}`);
+          router.push(`/booking/inv-${orderId}`);
         } else {
+          setIsProcessingCheckout(false);
           toast.error(res.message || "Failed to update transaction status.");
         }
 
         // Proceed to order confirmation
       } else {
+        setIsProcessingCheckout(false);
         toast.error(response?.message);
       }
     } catch (error) {
@@ -443,11 +470,22 @@ const Checkout = () => {
     }
   };
 
+  const calculateFinalAmount = () => {
+    const subtotal = Number(currentCartProviderData?.sub_total) || 0;
+    const discount = Number(promocodeDiscount) || 0;
+    const visitingCharges = serviceType === "home" 
+      ? (Number(currentCartProviderData?.visiting_charges) || 0) 
+      : 0;
+      
+    return subtotal - discount + visitingCharges;
+  };
+
   const createPaymentIntent = async (order_id) => {
     if (amount) {
       try {
+        const finalAmount = calculateFinalAmount();
         const paymentIntent = await stripeX.paymentIntents.create({
-          amount: Math.round(amount * 100), // Amount in cents
+          amount: Math.round(finalAmount * 100), // Amount in cents
           currency: stripeCurrencyCode,
           description: "payment",
           metadata: {
@@ -468,7 +506,6 @@ const Checkout = () => {
 
   // Handle Stripe Payment
   const handleStripePayment = async () => {
-    // Add your Stripe payment logic here
     try {
       const response = await placeOrderApi({
         method: dilveryDetails?.dilevryPymentMethod,
@@ -493,10 +530,13 @@ const Checkout = () => {
         setOrderID(response.data.order_id);
         createPaymentIntent(response.data.order_id);
       } else {
+        setIsProcessingCheckout(false); // Stop loading on error
         toast.error(response?.message);
       }
     } catch (error) {
       console.log(error, "error in stripe payment");
+      setIsProcessingCheckout(false); // Stop loading on error
+      toast.error(t("somethingWentWrong"));
     }
   };
 
@@ -531,13 +571,16 @@ const Checkout = () => {
           // Open PayPal URL in the current window
           window.location.href = paypalUrl;
         } else {
+          setIsProcessingCheckout(false); // Stop loading on error
           toast.error("PayPal URL not found in the response.");
         }
       } else {
+        setIsProcessingCheckout(false); // Stop loading on error
         toast.error(orderResponse.message || "Failed to place order.");
       }
     } catch (error) {
       console.error("Error during PayPal payment:", error);
+      setIsProcessingCheckout(false); // Stop loading on error
       toast.error(t("somethingWentWrong"));
     }
   };
@@ -570,6 +613,7 @@ const Checkout = () => {
         const orderId = orderResponse.data.order_id;
 
         if (!userEmail) {
+          setIsProcessingCheckout(false); // Stop loading on error
           toast.error(
             "Please update your email address to proceed with Paystack payment."
           );
@@ -593,7 +637,7 @@ const Checkout = () => {
             } else {
               toast.error(
                 transactionResponse.message ||
-                  "Failed to update transaction status."
+                "Failed to update transaction status."
               );
             }
           } catch (error) {
@@ -608,10 +652,12 @@ const Checkout = () => {
               order_id: orderId,
               status: "cancelled",
             });
+            setIsProcessingCheckout(false); // Stop loading when payment is cancelled
             toast.info("Payment was cancelled.");
             router.push(`/payment-status?order_id=${orderId}&status=cancelled`);
           } catch (error) {
             console.error("Error updating transaction:", error);
+            setIsProcessingCheckout(false); // Stop loading on error
             toast.error("Something went wrong. Please try again.");
           }
         };
@@ -621,7 +667,7 @@ const Checkout = () => {
         paystack.newTransaction({
           key: paymentSettings?.paystack_key, // Paystack public key
           email: userEmail, // User's email
-          amount: currentCartProviderData?.overall_amount * 100, // Amount in kobo
+          amount: calculateFinalAmount() * 100, // Amount in kobo
           currency: paystackCurrencyCode, // Default to NGN if not specified
           reference: `order_${orderId}_${new Date().getTime()}`, // Unique reference
           metadata: {
@@ -631,10 +677,12 @@ const Checkout = () => {
           onClose,
         });
       } else {
+        setIsProcessingCheckout(false); // Stop loading on error
         toast.error(orderResponse.message || "Failed to place order.");
       }
     } catch (error) {
       console.error("Error during Paystack payment:", error);
+      setIsProcessingCheckout(false); // Stop loading on error
       toast.error("Something went wrong. Please try again.");
     }
   };
@@ -676,7 +724,7 @@ const Checkout = () => {
           // Razorpay options
           const options = {
             key: razorpayKey, // Razorpay key from settings
-            amount: parseInt(currentCartProviderData?.overall_amount) * 100, // Amount in paise
+            amount: parseInt(calculateFinalAmount()) * 100, // Amount in paise
             currency: razorpayCurrencyCode, // Currency from settings
             name: process.env.NEXT_PUBLIC_APP_NAME, // Your app name
             order_id: razorpayOrderId, // Razorpay order ID
@@ -719,6 +767,7 @@ const Checkout = () => {
                   status: "cancelled",
                 })
                   .then((res) => {
+                    setIsProcessingCheckout(false); // Stop loading on cancel
                     toast.error(t("paymentCancelled"));
                     router.push(
                       `/payment-status?order_id=${placeOrderId}&status=failed`
@@ -726,6 +775,7 @@ const Checkout = () => {
                   })
                   .catch((error) => {
                     console.error("Error updating transaction:", error);
+                    setIsProcessingCheckout(false); // Stop loading on error
                     toast.error(t("somethingWentWrong"));
                   });
               },
@@ -736,15 +786,18 @@ const Checkout = () => {
           const razorpayInstance = new window.Razorpay(options);
           razorpayInstance.open();
         } else {
+          setIsProcessingCheckout(false); // Stop loading on error
           toast.error(
             razorpayOrderResponse.message || "Failed to create Razorpay order."
           );
         }
       } else {
+        setIsProcessingCheckout(false); // Stop loading on error
         toast.error(orderResponse.message || "Failed to place order.");
       }
     } catch (error) {
       console.error("Error during Razorpay payment:", error);
+      setIsProcessingCheckout(false); // Stop loading on error
       toast.error(t("somethingWentWrong"));
     }
   };
@@ -780,116 +833,131 @@ const Checkout = () => {
           // Open PayPal URL in the current window
           window.location.href = flutterwaveUrl;
         } else {
+          setIsProcessingCheckout(false); // Stop loading on error
           toast.error("Flutterwave URL not found in the response.");
         }
       } else {
+        setIsProcessingCheckout(false); // Stop loading on error
         toast.error(orderResponse.message || "Failed to place order.");
       }
     } catch (error) {
       console.error("Error during Flutterwave payment:", error);
+      setIsProcessingCheckout(false); // Stop loading on error
       toast.error(t("somethingWentWrong"));
     }
   };
 
   const proceedToPayment = (paymentMethod, dilveryDetails) => {
-    switch (paymentMethod) {
-      case "cod":
-        handleCODPayment(dilveryDetails);
-        break;
-      case "stripe":
-        handleStripePayment();
-        break;
-      case "paypal":
-        handlePaypalPayment();
-        break;
-      case "paystack":
-        handlePaystackPayment();
-        break;
-      case "razorpay":
-        handleRazorpayPayment();
-        break;
-      case "flutterwave":
-        handleFlutterwavePayment();
-        break;
-      default:
-        toast.error(t("invalidPaymentMethodSelected"));
+    try {
+      switch (paymentMethod) {
+        case "cod":
+          handleCODPayment(dilveryDetails);
+          break;
+        case "stripe":
+          handleStripePayment();
+          break;
+        case "paypal":
+          handlePaypalPayment();
+          break;
+        case "paystack":
+          handlePaystackPayment();
+          break;
+        case "razorpay":
+          handleRazorpayPayment();
+          break;
+        case "flutterwave":
+          handleFlutterwavePayment();
+          break;
+        default:
+          setIsProcessingCheckout(false); // Reset on invalid payment method
+          toast.error(t("invalidPaymentMethodSelected"));
+      }
+    } catch (error) {
+      console.error("Error in payment processing:", error);
+      setIsProcessingCheckout(false); // Reset on error
+      toast.error(t("somethingWentWrong"));
     }
   };
 
   const handleCheckout = async (e) => {
     e.preventDefault();
+    setIsProcessingCheckout(true); // Start loading
 
-    const {
-      dilevryLocation,
-      dilevryPymentMethod,
-      dilveryAddressType,
-      dilveryDate,
-      dilveryTime,
-      dilveryNote,
-      isReOrder,
-      reOrderId,
-    } = dilveryDetails;
+    try {
+      const {
+        dilevryLocation,
+        dilevryPymentMethod,
+        dilveryAddressType,
+        dilveryDate,
+        dilveryTime,
+        dilveryNote,
+        isReOrder,
+        reOrderId,
+      } = dilveryDetails;
 
-    // Validate delivery location
-    if (dilveryAddressType === "home") {
-      if (!dilevryLocation || !dilevryLocation.id || !dilevryLocation.address) {
-        toast.error(t("invalidDeliveryAddress"));
-        return;
-      }
-    }
-
-    // Validate delivery address type
-    if (!["home", "store"].includes(dilveryAddressType)) {
-      toast.error(t("invalidDelievryType"));
-      return;
-    }
-
-    // Validate delivery date and time
-    if (!dilveryDate || !dilveryTime) {
-      toast.error(t("invalidDateAndTime"));
-      return;
-    }
-
-    // Validate payment method
-    if (!dilevryPymentMethod) {
-      toast.error(t("selectPaymentMethod"));
-      return;
-    }
-
-    // For 'home' delivery, validate address and check provider availability
-    if (dilveryAddressType === "home") {
-      if (!dilevryLocation || !dilevryLocation.id || !dilevryLocation.address) {
-        toast.error(t("invalidDeliveryAddress"));
-        return;
-      }
-
-      try {
-        // Check provider availability
-        const response = await providerAvailableApi({
-          latitude: dilevryLocation?.lattitude,
-          longitude: dilevryLocation?.longitude,
-          isCheckout: 1,
-          custom_job_request_id: isCustomJob
-            ? customJobData?.custom_job_request_id
-            : "",
-          bidder_id: isCustomJob ? customJobData?.providerId : "",
-        });
-
-        if (response.error === false) {
-          // toast.success(response.message);
-          proceedToPayment(dilevryPymentMethod, dilveryDetails);
-        } else {
-          toast.error(response.message);
+      // Validation checks
+      if (dilveryAddressType === "home") {
+        if (!dilevryLocation || !dilevryLocation.id || !dilevryLocation.address) {
+          toast.error(t("invalidDeliveryAddress"));
+          setIsProcessingCheckout(false); // Stop loading on error
+          return;
         }
-      } catch (error) {
-        console.error(error);
-        toast.error(t("somethingWentWrong"));
       }
-    } else {
-      // For 'store' delivery, proceed directly to payment
-      proceedToPayment(dilevryPymentMethod, dilveryDetails);
+
+      if (!["home", "store"].includes(dilveryAddressType)) {
+        toast.error(t("invalidDelievryType"));
+        setIsProcessingCheckout(false);
+        return;
+      }
+
+      if (!dilveryDate || !dilveryTime) {
+        toast.error(t("invalidDateAndTime"));
+        setIsProcessingCheckout(false);
+        return;
+      }
+
+      if (!dilevryPymentMethod) {
+        toast.error(t("selectPaymentMethod"));
+        setIsProcessingCheckout(false);
+        return;
+      }
+
+      // For 'home' delivery, validate address and check provider availability
+      if (dilveryAddressType === "home") {
+        try {
+          const response = await providerAvailableApi({
+            latitude: dilevryLocation?.lattitude,
+            longitude: dilevryLocation?.longitude,
+            isCheckout: 1,
+            order_id: isReorderMode ? reorderState.orderId : "",
+            custom_job_request_id: isCustomJob
+              ? customJobData?.custom_job_request_id
+              : "",
+            bidder_id: isCustomJob ? customJobData?.providerId : "",
+          });
+
+          if (response.error === false) {
+            await proceedToPayment(dilevryPymentMethod, dilveryDetails);
+          } else {
+            toast.error(response.message);
+           
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error(t("somethingWentWrong"));
+       
+        }
+      } else {
+        // For 'store' delivery
+        await proceedToPayment(dilevryPymentMethod, dilveryDetails);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(t("somethingWentWrong"));
+    } finally {
     }
   };
+
 
   return (
     <Layout>
@@ -914,27 +982,26 @@ const Checkout = () => {
                   {availableOnHome && (
                     <button
                       onClick={() => handleServiceType("home")}
-                      className={`flex items-center justify-between m-0 px-4 py-2 border rounded-[8px] w-full transition-all duration-300 ease-in-out ${
-                        serviceType === "home"
+                      className={`disabled:cursor-not-allowed flex items-center justify-between m-0 px-4 py-2 border rounded-[8px] w-full transition-all duration-300 ease-in-out ${serviceType === "home"
                           ? "border_color selected_shadow"
                           : "border-gray-300"
-                      }`}
+                        }`}
+                      disabled={serviceType === "home"}
                     >
                       <div className="flex items-center">
                         <span>
                           <BsHouse size={24} />
                         </span>
-                        <span className="ml-2">{t("atDoorstep")}</span>
+                        <span className="ml-2 rtl:mr-2">{t("atDoorstep")}</span>
                       </div>
                       <div className="flex items-center justify-center">
                         <div className="relative">
                           {/* Outer Blue Circle */}
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${
-                              serviceType === "home"
+                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${serviceType === "home"
                                 ? "primary_bg_color"
                                 : "bg-[#21212138]"
-                            }`}
+                              }`}
                           >
                             {/* Inner White Circle */}
                             <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -947,27 +1014,26 @@ const Checkout = () => {
                   {availableOnStore && (
                     <button
                       onClick={() => handleServiceType("store")}
-                      className={`flex items-center justify-between m-0 px-4 py-2 border rounded-[8px] w-full transition-all duration-300 ease-in-out ${
-                        serviceType === "store"
+                      className={`disabled:cursor-not-allowed flex items-center justify-between m-0 px-4 py-2 border rounded-[8px] w-full transition-all duration-300 ease-in-out ${serviceType === "store"
                           ? "border_color selected_shadow"
                           : "border-gray-300"
-                      }`}
+                        }`}
+                      disabled={serviceType === "store"}
                     >
                       <div className="flex items-center gap-3">
                         <span>
                           <IoStorefrontOutline size={24} />
                         </span>
-                        <span className="ml-2">{t("atStore")}</span>
+                        <span className="rtl:mr-2">{t("atStore")}</span>
                       </div>
                       <div className="flex items-center justify-center">
                         <div className="relative">
                           {/* Outer Blue Circle */}
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${
-                              serviceType === "store"
+                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${serviceType === "store"
                                 ? "primary_bg_color"
                                 : "bg-[#21212138]"
-                            }`}
+                              }`}
                           >
                             {/* Inner White Circle */}
                             <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -993,7 +1059,7 @@ const Checkout = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="block text-lg font-semibold">
-                            {defaultAddress?.city_name}
+                            {defaultAddress?.city_name || defaultAddress?.city}
                           </span>
                           <span>|</span>
                           <span>
@@ -1036,11 +1102,10 @@ const Checkout = () => {
                 <div className="mt-3 flex flex-wrap sm:flex-nowrap items-center p-3 gap-3 w-full">
                   <div className="flex items-center  space-x-2 gap-3 w-full">
                     <span
-                      className={`${
-                        dilveryDetails?.dilveryDate
+                      className={`${dilveryDetails?.dilveryDate
                           ? "light_bg_color primary_text_color"
                           : "bg-[#2121212E]"
-                      } p-3 rounded-[8px]`}
+                        } p-3 rounded-[8px]`}
                     >
                       <BsCalendar3Week size={22} />
                     </span>
@@ -1051,19 +1116,18 @@ const Checkout = () => {
                       <span>
                         {dilveryDetails?.dilveryDate
                           ? dayjs(dilveryDetails.dilveryDate).format(
-                              "DD/MM/YYYY"
-                            )
+                            "DD/MM/YYYY"
+                          )
                           : "---"}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center  space-x-2 gap-3 w-full">
                     <span
-                      className={`${
-                        dilveryDetails?.dilveryTime
+                      className={`${dilveryDetails?.dilveryTime
                           ? "light_bg_color primary_text_color"
                           : "bg-[#2121212E]"
-                      } p-3 rounded-[8px]`}
+                        } p-3 rounded-[8px]`}
                     >
                       <IoTimeOutline size={22} />
                     </span>
@@ -1074,8 +1138,8 @@ const Checkout = () => {
                       <span>
                         {dilveryDetails?.dilveryTime
                           ? dayjs(
-                              `1970-01-01T${dilveryDetails.dilveryTime}`
-                            ).format("h:mm A")
+                            `1970-01-01T${dilveryDetails.dilveryTime}`
+                          ).format("h:mm A")
                           : "---"}{" "}
                       </span>
                     </div>
@@ -1102,11 +1166,10 @@ const Checkout = () => {
                 {/* Notes Section */}
                 <div className="extraNotes mt-3">
                   <div
-                    className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${
-                      activeNotes
+                    className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${activeNotes
                         ? "max-h-[200px] opacity-100"
                         : "max-h-0 opacity-0"
-                    }`}
+                      }`}
                   >
                     <div className="flex  items-center justify-between gap-3">
                       <div className="flex items-center justify-between light_bg_color border border_color w-full rounded-lg p-3">
@@ -1135,14 +1198,13 @@ const Checkout = () => {
                   </div>
                   {!activeNotes && (
                     <button
-                      className={`mt-4 flex items-center ${
-                        note ? "justify-start" : "justify-center"
-                      } p-3 rounded-md bg-[#2121212E] w-full gap-2`}
+                      className={`mt-4 flex items-center ${note ? "justify-start" : "justify-center"
+                        } p-3 rounded-md bg-[#2121212E] w-full gap-2`}
                       onClick={handleActiveNotes}
                     >
                       <MdModeEdit size={22} />
                       <span className="text-sm font-normal">
-                        {note ? note : "Add instruction"}
+                        {note ? note : t("addInstruction")}
                       </span>
                     </button>
                   )}
@@ -1160,19 +1222,15 @@ const Checkout = () => {
                       <button
                         key={index}
                         onClick={() => handlePaymentOption(method)}
-                        className={`flex items-center justify-between gap-3 px-4 py-3 border rounded-md w-full transition-all duration-300 ${
-                          paymentOption === method.methodType
+                        className={`flex items-center justify-between gap-3 px-4 py-3 border rounded-md w-full transition-all duration-300 ${paymentOption === method.methodType
                             ? "border border_color selected_shadow"
                             : "border"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <CustomImageTag
                             src={method.methodIcon}
                             alt={method.method}
-                            width={30}
-                            height={30}
-                            onError={placeholderImage}
                             className="w-8 h-8 object-contain"
                           />
                           <span>{method.method}</span>
@@ -1180,11 +1238,10 @@ const Checkout = () => {
                         <div className="flex items-center justify-center">
                           <div className="relative">
                             <div
-                              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${
-                                paymentOption === method.methodType
+                              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${paymentOption === method.methodType
                                   ? "primary_bg_color"
                                   : "bg-[#21212138]"
-                              }`}
+                                }`}
                             >
                               <div className="w-2 h-2 bg-white rounded-full"></div>
                             </div>
@@ -1195,7 +1252,7 @@ const Checkout = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-red-500">
+                <div className="text-red-500 text-center flex justify-center items-center">
                   {t("noPaymentMethodsAvailable")}
                 </div>
               )}
@@ -1215,10 +1272,6 @@ const Checkout = () => {
                           src={appliedCoupon?.image}
                           alt={appliedCoupon?.promo_code}
                           className="w-full h-full rounded-md"
-                          width={0}
-                          height={0}
-                          loading="lazy"
-                          onError={placeholderImage}
                         />
                       </div>
                       <div className="flex flex-col items-start justify-between mb-2">
@@ -1249,7 +1302,7 @@ const Checkout = () => {
                       <FaPercentage />
                       {t("saveBigwith")} {offers?.length} {t("moreOffers")}
                     </span>
-                    <span className="text-green-600 font-semibold">
+                    <span className="text-green-600 font-semibold rtl:rotate-180">
                       <FaChevronRight size={20} />
                     </span>
                   </div>
@@ -1261,10 +1314,6 @@ const Checkout = () => {
                           src={offers[0]?.image}
                           alt={offers[0]?.promo_code}
                           className="w-full h-full rounded-md"
-                          width={0}
-                          height={0}
-                          loading="lazy"
-                          onError={placeholderImage}
                         />
                       </div>
                       <div className="flex flex-col items-start justify-between mb-2">
@@ -1323,17 +1372,25 @@ const Checkout = () => {
               <div className="flex justify-between items-center text-lg font-bold">
                 <span>{t("finalPrice")}</span>
                 <span>
-                  {showPrice(currentCartProviderData?.overall_amount)}
+                  {showPrice(calculateFinalAmount())}
                 </span>
               </div>
               {/* Checkout Button */}
               <button
-                className="w-full primary_bg_color mt-6 text-white py-2 rounded-xl font-medium text-sm transition hover:bg-black"
+                disabled={isProcessingCheckout}
+                className={`w-full primary_bg_color mt-6 text-white py-2 rounded-xl font-medium text-sm transition hover:bg-black ${isProcessingCheckout ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 onClick={handleCheckout}
               >
-                {paymentOption === "cod"
-                  ? t("bookService")
-                  : t("makeOnlinePayment")}
+                {isProcessingCheckout ? (
+                  <div className="flex items-center justify-center">
+                    <MiniLoader color="white" />
+                  </div>
+                ) : paymentOption === "cod" ? (
+                  t("bookService")
+                ) : (
+                  t("makeOnlinePayment")
+                )}
               </button>
             </div>
           </div>
@@ -1357,7 +1414,7 @@ const Checkout = () => {
           onClose={() => setAddressDrawerOpen(false)}
           defaultAddress={defaultAddress}
           setDefaultAddress={setDefaultAddress}
-          onUpdateAddress={() => {}}
+          onUpdateAddress={() => { }}
         />
       )}
 
@@ -1380,6 +1437,7 @@ const Checkout = () => {
           orderID={orderID}
           open={open}
           setOpen={setOpen}
+          setIsProcessingCheckout={setIsProcessingCheckout}
         />
       )}
     </Layout>

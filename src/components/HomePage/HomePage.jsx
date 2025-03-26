@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Loader from "../ReUseableComponents/Loader";
 import { clearCategories } from "@/redux/reducers/multiCategoriesSlice";
 import { isLogin } from "@/utils/Helper";
+import OngoingBookings from "./OngoingBookings";
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -52,9 +53,8 @@ const HomePage = () => {
         <Loader />
       ) : (
         <Layout>
-          {homePageData?.sliders?.length > 0 && (
             <HeroSlider sliderData={homePageData?.sliders} />
-          )}
+
           {homePageData?.categories?.length > 0 && (
             <HomeCategories categoriesData={homePageData?.categories} />
           )}
@@ -64,7 +64,7 @@ const HomePage = () => {
               let content;
               switch (section?.section_type) {
                 case "partners":
-                  content = (
+                  content = section?.partners?.length > 0 && (
                     <>
                       <NearbyProviders sectionData={section} />
                       <HomeDivider />
@@ -72,7 +72,7 @@ const HomePage = () => {
                   )
                   break;
                 case "top_rated_partner":
-                  content = (
+                  content = section?.partners?.length > 0 && (
                     <>
                       <TopRatedProviders sectionData={section} />
                       <HomeDivider />
@@ -81,7 +81,7 @@ const HomePage = () => {
                   break;
 
                 case "sub_categories":
-                  content = (
+                  content = section?.sub_categories?.length > 0 && (
                     <>
                       <HomeCommanSection data={section} />
                       <HomeDivider />
@@ -98,16 +98,16 @@ const HomePage = () => {
                   break;
 
                 case "ongoing_order":
-                  content = section?.previous_order.length > 0 && (
+                  content = section?.ongoing_order.length > 0 && (
                     <>
-                      <RecentBookings data={section} />
+                      <OngoingBookings data={section} />
                       <HomeDivider />
                     </>
                   )
                   break;
 
                 case "near_by_provider":
-                  content = (
+                  content = section?.partners?.length > 0 && (
                     <>
                       <NearbyProviders sectionData={section} />
                       <HomeDivider />
@@ -116,7 +116,7 @@ const HomePage = () => {
                   break;
 
                 case "banner":
-                  content = (
+                  content = section?.banner[0]?.web_banner_image && (
                     <>
                       <Banner banner={section} />
                       <HomeDivider />

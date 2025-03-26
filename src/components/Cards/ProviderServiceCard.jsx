@@ -1,6 +1,4 @@
 "use client";
-import { placeholderImage } from "@/utils/Helper";
-import Image from "next/image";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 
 const ProviderServiceCard = ({ title, description, imageUrl, number }) => {
@@ -28,9 +26,6 @@ const ProviderServiceCard = ({ title, description, imageUrl, number }) => {
         <CustomImageTag
           src={imageUrl}
           alt={title}
-          width={0}
-          height={0}
-          onError={placeholderImage}
           className="w-full h-[180px] object-cover rounded-[16px]"
         />
       </div>

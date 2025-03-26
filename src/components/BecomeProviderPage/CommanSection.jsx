@@ -1,7 +1,6 @@
 "use client"
 import Image from 'next/image';
 import HighlightTag from '../ReUseableComponents/HighlightTag';
-import { placeholderImage } from '@/utils/Helper';
 import CustomImageTag from '../ReUseableComponents/CustomImageTag';
 
 const CommanSection = ({ isReversed, headline, title, description, buttonText, img }) => {
@@ -33,11 +32,7 @@ const CommanSection = ({ isReversed, headline, title, description, buttonText, i
                     <CustomImageTag
                             src={img}
                             alt="Worker"
-                            objectFit="contain"
-                            className="z-10"
-                            width={0}
-                            height={0}
-                            onError={placeholderImage}
+                            className="z-10 object-contain"
                         />
                     </div>
                 </div>

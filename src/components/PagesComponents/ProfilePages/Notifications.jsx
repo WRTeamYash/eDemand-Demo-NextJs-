@@ -8,32 +8,35 @@ import { userNotifications } from "@/api/apiRoutes";
 import MiniLoader from "@/components/ReUseableComponents/MiniLoader";
 import { useTranslation } from "@/components/Layout/TranslationContext";
 import withAuth from "@/components/Layout/withAuth";
+import NoDataFound from "@/components/ReUseableComponents/Error/NoDataFound";
+import { Skeleton } from "@/components/ui/skeleton";
+import { isMobile } from "@/utils/Helper";
 
 const Notifications = () => {
   const t = useTranslation();
 
-
   const [notifications, setNotifications] = useState([]);
   const [total, setTotal] = useState(0);
-  const limit = 10; // Number of providers per fetch
-  const [offset, setOffset] = useState(0); // Offset for pagination
-  const [loading, setLoading] = useState(false); // To manage button loading state
+  const limit = 10;
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [isloadMore, setIsloadMore] = useState(false);
 
   const fetchNotifications = async (append = false, customOffset = offset) => {
     if (append) {
-      setIsloadMore(true); // Set Load More button state to loading
+      setIsloadMore(true);
     } else {
-      setLoading(true); // Set initial fetch to loading
+      setLoading(true);
     }
+
     try {
       const response = await userNotifications({
         limit: limit,
         offset: customOffset,
       });
       if (response?.error === false) {
-        setNotifications((prevNofications) =>
-          append ? [...prevNofications, ...response?.data] : response?.data
+        setNotifications((prev) =>
+          append ? [...prev, ...response?.data] : response?.data
         );
         setTotal(response?.total);
       }
@@ -46,49 +49,76 @@ const Notifications = () => {
   };
 
   const handleLoadMore = async () => {
-    // Compute the new offset value
     const newOffset = offset + limit;
-    setOffset(newOffset); // Update the state for offset
-
-    // Pass the computed offset directly to fetchAllProviders
-    await fetchNotifications(true, newOffset); // Ensure the correct offset is used
+    setOffset(newOffset);
+    await fetchNotifications(true, newOffset);
   };
+
   useEffect(() => {
     fetchNotifications(false, 0);
   }, []);
 
+  const notificationSkeletonCard = (
+    <div className="flex items-center justify-between border-b last:border-b-0 pb-4 gap-4 bg-light_gray">
+      <div className="w-16 h-16 rounded overflow-hidden">
+        <Skeleton className="w-full h-full" />
+      </div>
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+      <div className="w-16">
+        <Skeleton className="h-4 w-full" />
+      </div>
+    </div>
+  );
+
   return (
     <Layout>
-      <BreadCrumb firstEle={t("notifications")} firstEleLink="/notifications" />
-      <section className="profile_sec my-12">
+      <BreadCrumb firstEle={t("notifications")} firstEleLink="/notifications" isMobile={isMobile}/>
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto">
-          {/* Grid layout */}
           <div className="grid grid-cols-12 gap-6">
-            {/* Sidebar */}
-            <div className="col-span-12 lg:col-span-3">
+             <div className="col-span-12 lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
-            {/* Main Content */}
             <div className="lg:col-span-9 col-span-12">
               <div className="flex flex-col gap-6">
-                <div className="page-headline text-2xl sm:text-3xl font-semibold">
+                <div className="page-headline text-xl border-b pb-3 md:pb-0 md:border-none md:text-2xl sm:text-3xl font-semibold">
                   <span>{t("notifications")}</span>
                 </div>
-                <div className="flex flex-col gap-6">
-                  {notifications.map((notification, index) => (
-                    <NotificationCard key={index} data={notification} />
-                  ))}
-                </div>
+
+                {/* Data Loading State */}
+                {loading ? (
+                  <div className="flex flex-col gap-4">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index}>{notificationSkeletonCard}</div>
+                    ))}
+                  </div>
+                ) : notifications?.length === 0 ? (
+                  <div className="w-full h-[60vh] flex items-center justify-center">
+                    <NoDataFound
+                      title={t("noNotificationsFound")}
+                      desc={t("noNotificationsFoundText")}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    {notifications.map((notification, index) => (
+                      <NotificationCard key={index} data={notification} />
+                    ))}
+                  </div>
+                )}
 
                 {/* Load More Button */}
-                <div className="loadmore my-6 flex items-center justify-center">
-                  {isloadMore ? (
-                    <button className="primary_bg_color primary_text_color py-3 px-8 rounded-xl">
-                      <MiniLoader />
-                    </button>
-                  ) : (
-                    notifications?.length < total && (
+                {!loading && notifications?.length > 0 && notifications?.length < total && (
+                  <div className="loadmore my-6 flex items-center justify-center">
+                    {isloadMore ? (
+                      <button className="primary_bg_color primary_text_color py-3 px-8 rounded-xl">
+                        <MiniLoader />
+                      </button>
+                    ) : (
                       <button
                         onClick={handleLoadMore}
                         className="light_bg_color primary_text_color py-3 px-8 rounded-xl"
@@ -96,9 +126,9 @@ const Notifications = () => {
                       >
                         {t("loadMore")}
                       </button>
-                    )
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

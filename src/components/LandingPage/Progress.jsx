@@ -1,15 +1,11 @@
-"use client"
-import CommanCenterText from '../ReUseableComponents/CommanCenterText'
-import { placeholderImage } from '@/utils/Helper';
-import CustomImageTag from '../ReUseableComponents/CustomImageTag';
+"use client";
+import CommanCenterText from "../ReUseableComponents/CommanCenterText";
+import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 
-const Progress = ({title, desc, data}) => {
-
+const Progress = ({ title, desc, data }) => {
   return (
-    <section id='progress' className='py-8 md:py-20'>
-
+    <section id="progress" className="py-8 md:py-20">
       <div className="container mx-auto">
-      
         <CommanCenterText
           highlightedText={""}
           title={title}
@@ -18,9 +14,12 @@ const Progress = ({title, desc, data}) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {data?.map((step, index) => (
-            <div key={step?.id} className="flex flex-col items-center text-center">
+            <div
+              key={step?.id}
+              className="flex flex-col items-center text-center"
+            >
               <div className="light_bg_color rounded-full mb-4">
-              <CustomImageTag src={step?.image} width={100} height={100} onError={placeholderImage} alt="step"/>
+                <CustomImageTag src={step?.image} alt="step" />
               </div>
               <h3 className="font-semibold mb-2">{step.title}</h3>
               <p className="text-sm description_color">{step.description}</p>
@@ -30,6 +29,6 @@ const Progress = ({title, desc, data}) => {
       </div>
     </section>
   );
-}
+};
 
-export default Progress
+export default Progress;

@@ -7,7 +7,6 @@
   --primary-color: #0277fa;
   --secondary-color: #000000;
   --light-bg-color: #0277fa12;
-  /* --light-bg-color: #ebf4ff; */
   --text-color: #000000;
 }
 
@@ -28,6 +27,11 @@ body {
     rgba(2, 119, 250, 0.12) 100%
   ); */
   background-color: #fff;
+
+}
+
+.swiper-wrapper {
+  padding-bottom: 30px !important;
 }
 
 .dark body {
@@ -174,6 +178,11 @@ body {
   .schedule_cal table tbody tr td {
     width: 100%;
   }
+
+  .commonMT{
+    @apply mt-[80px] md:mt-[90px]
+  }
+
 }
 
 @layer base {
@@ -313,6 +322,7 @@ body {
 .page-transition {
   transition: background-color 0.1s ease-in-out;
 }
+
 .outlined_text {
   /* padding: 10px; */
   border-radius: 100%;
@@ -415,11 +425,13 @@ body {
 .selected_shadow {
   box-shadow: 0px 18px 32px 0px rgba(0, 21, 96, 0.08);
 }
+
 .flower {
-  width: 25px; /* adjust to control the size */
+  width: 25px;
+  /* adjust to control the size */
   aspect-ratio: 1;
-  --g:/23.606% 23.606% radial-gradient(#000 calc(71% - 1px),#0000 71%) no-repeat;
-  mask: 100% 50% var(--g),90.451% 79.389% var(--g),65.451% 97.553% var(--g),34.549% 97.553% var(--g),9.549% 79.389% var(--g),0% 50% var(--g),9.549% 20.611% var(--g),34.549% 2.447% var(--g),65.451% 2.447% var(--g),90.451% 20.611% var(--g),radial-gradient(100% 100%,#000 36.327%,#0000 calc(36.327% + 1px));
+  --g: /23.606% 23.606% radial-gradient(#000 calc(71% - 1px), #0000 71%) no-repeat;
+  mask: 100% 50% var(--g), 90.451% 79.389% var(--g), 65.451% 97.553% var(--g), 34.549% 97.553% var(--g), 9.549% 79.389% var(--g), 0% 50% var(--g), 9.549% 20.611% var(--g), 34.549% 2.447% var(--g), 65.451% 2.447% var(--g), 90.451% 20.611% var(--g), radial-gradient(100% 100%, #000 36.327%, #0000 calc(36.327% + 1px));
 }
 
 .custom_time .react-time-picker {
@@ -547,6 +559,33 @@ body {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* phone input css */
+.react-tel-input .form-control {
+  position: relative;
+  font-size: 16px;
+  letter-spacing: 0.01rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-inline-start: 48px;
+  margin-left: 0;
+  background: #ffffff;
+  border: 1px solid #cacaca;
+  border-radius: 5px;
+  line-height: 25px;
+  height: 44px !important;
+  width: 100% !important;
+  outline: none;
+}
+
+.react-tel-input .selected-flag {
+  padding: 0px 5px 0 8px !important;
+}
+
+.react-tel-input .selected-flag .arrow {
+  right: 20px !important;
+}
+
+
 .react-tel-input .flag-dropdown {
   background-color: transparent !important;
 }
@@ -672,7 +711,7 @@ body {
   border-radius: 3px;
 }
 
-.file-item{
+.file-item {
   word-break: break-all;
 }
 
@@ -696,12 +735,12 @@ body {
   color: black;
 }
 
-.loaderBorder{
+.loaderBorder {
   border-top: 4px solid var(--primary-color);
 }
 
 /* width */
-.chatListWrapper::-webkit-scrollbar ,
+.chatListWrapper::-webkit-scrollbar,
 .chatsWrapper::-webkit-scrollbar {
   width: 3px;
   height: 6px;
@@ -715,49 +754,77 @@ body {
 }
 
 /* Track */
-.chatListWrapper::-webkit-scrollbar-track ,
+.chatListWrapper::-webkit-scrollbar-track,
 .chatsWrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 
 /* Handle */
-.chatListWrapper::-webkit-scrollbar-thumb ,
+.chatListWrapper::-webkit-scrollbar-thumb,
 .chatsWrapper::-webkit-scrollbar-thumb {
   background: var(--primary-color);
   border-radius: 10px;
 }
+
+/* phone input css */
+.react-tel-input .form-control {
+  position: relative;
+  font-size: 16px;
+  letter-spacing: 0.01rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-inline-start: 48px;
+  margin-left: 0;
+  background: #ffffff;
+  border: 1px solid #cacaca;
+  border-radius: 5px;
+  line-height: 25px;
+  height: 44px !important;
+  width: 100% !important;
+  outline: none;
+}
+
+.react-tel-input .selected-flag {
+  padding: 0px 5px 0 8px !important;
+}
+
+.react-tel-input .selected-flag .arrow {
+  right: 20px !important;
+}
+
+
 .blob {
-	width:30vw;
-	height:30vw;
-	position:relative;
-	margin-left:40%;
-	
-	--time:10s;
-	--amount:3;	
-	
-	img {
-		width:100%;
-		height:100%;
-		object-fit: cover;		
-		position:absolute;
-	}
-	
-	svg {
-		width:300%;
-		height:300%;
-		margin-left:-100%;
-		margin-top:-100%;
-		position:absolute;
-		animation:blob-skew calc( var(--time, 30s) * 0.5 ) linear  0s infinite, blob-turn var(--time, 30s) linear infinite;
-		transform-origin: center;
+  width: 30vw;
+  height: 30vw;
+  position: relative;
+  margin-left: 40%;
 
-		path {
-			animation: blob-scale calc( var(--time, 30s) * 0.5 ) ease-in-out 0s infinite;
-			transform-origin: center;			
-		}
+  --time: 10s;
+  --amount: 3;
 
-	}	
-		
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+  }
+
+  svg {
+    width: 300%;
+    height: 300%;
+    margin-left: -100%;
+    margin-top: -100%;
+    position: absolute;
+    animation: blob-skew calc(var(--time, 30s) * 0.5) linear 0s infinite, blob-turn var(--time, 30s) linear infinite;
+    transform-origin: center;
+
+    path {
+      animation: blob-scale calc(var(--time, 30s) * 0.5) ease-in-out 0s infinite;
+      transform-origin: center;
+    }
+
+  }
+
 }
 
 
@@ -765,6 +832,7 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -774,51 +842,67 @@ body {
   0% {
     transform: skewY(0deg);
   }
+
   13% {
-    transform: skewY( calc( (1.8deg) * var(--amount, 2)) );
+    transform: skewY(calc((1.8deg) * var(--amount, 2)));
   }
+
   18% {
-    transform: skewY( calc( (2.2deg) * var(--amount, 2)) );
+    transform: skewY(calc((2.2deg) * var(--amount, 2)));
   }
+
   24% {
-    transform: skewY( calc( (2.48deg) * var(--amount, 2)) );
+    transform: skewY(calc((2.48deg) * var(--amount, 2)));
   }
+
   25% {
-    transform: skewY( calc( (2.5deg) * var(--amount, 2)) );
+    transform: skewY(calc((2.5deg) * var(--amount, 2)));
   }
+
   26% {
-    transform: skewY( calc( (2.48deg) * var(--amount, 2)) );
+    transform: skewY(calc((2.48deg) * var(--amount, 2)));
   }
+
   32% {
-    transform: skewY( calc( (2.2deg) * var(--amount, 2)) );
+    transform: skewY(calc((2.2deg) * var(--amount, 2)));
   }
+
   37% {
-    transform: skewY( calc( (1.8deg) * var(--amount, 2)) );
+    transform: skewY(calc((1.8deg) * var(--amount, 2)));
   }
+
   50% {
     transform: skewY(0deg);
   }
+
   63% {
-    transform: skewY( calc( (-1.8deg) * var(--amount, 2)) );
+    transform: skewY(calc((-1.8deg) * var(--amount, 2)));
   }
+
   68% {
-    transform: skewY( calc( (-2.2deg) * var(--amount, 2)) );
+    transform: skewY(calc((-2.2deg) * var(--amount, 2)));
   }
+
   74% {
-    transform: skewY( calc( (-2.48deg) * var(--amount, 2)) );
+    transform: skewY(calc((-2.48deg) * var(--amount, 2)));
   }
+
   75% {
-    transform: skewY( calc( (-2.5deg) * var(--amount, 2)) );
+    transform: skewY(calc((-2.5deg) * var(--amount, 2)));
   }
+
   76% {
-    transform: skewY( calc( (-2.48deg) * var(--amount, 2)) );
+    transform: skewY(calc((-2.48deg) * var(--amount, 2)));
   }
+
   82% {
-    transform: skewY( calc( (-2.2deg) * var(--amount, 2)) );
+    transform: skewY(calc((-2.2deg) * var(--amount, 2)));
   }
+
   87% {
-    transform: skewY( calc( (-1.8deg) * var(--amount, 2)) );
+    transform: skewY(calc((-1.8deg) * var(--amount, 2)));
   }
+
   100% {
     transform: skewY(0deg);
   }
@@ -828,15 +912,19 @@ body {
   0% {
     transform: scaleX(.9) scaleY(1);
   }
+
   25% {
     transform: scaleX(.9) scaleY(.9);
   }
+
   50% {
     transform: scaleX(1) scaleY(.9);
   }
+
   75% {
     transform: scaleX(.9) scaleY(.9);
   }
+
   100% {
     transform: scaleX(.9) scaleY(1);
   }
@@ -847,6 +935,7 @@ body {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -856,6 +945,7 @@ body {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -868,4 +958,117 @@ body {
 
 .rtl-slide {
   animation: slideRight 120s linear infinite;
+}
+
+
+.swiper-pagination {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+
+  .heroSliderSection .swiper-pagination {
+    background: white;
+    position: relative;
+    z-index: 1;
+    margin: auto;
+    margin-top: -85px;
+    width: max-content;
+    padding: 8px;
+    border-radius: 100px;
+  }
+
+  .heroSliderSection .swiper-pagination-bullet {
+    background: transparent;
+    border: 1px solid !important;
+    opacity: 1;    
+    width: 8px;
+    height: 8px;
+  }
+
+  .heroSliderSection .swiper-pagination-bullet-active {
+    width: 20px;
+    height: 8px;
+    background: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    border-radius: 16px;
+  }
+
+  .swiper-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .homeCategories .swiper-pagination {
+    padding-bottom: 20px;
+  }
+
+  .swiper-pagination-bullet {
+    background: var(--primary-color);
+    outline: none !important;
+    border-radius: 100%;
+    opacity: 0.4;
+    height: 6px;
+    width: 6px;
+  }
+
+  .swiper-pagination-bullet-active {
+    background: var(--primary-color) !important;
+    opacity: 1 !important;
+    /* padding: 8px !important; */
+    height: 8px;
+    width: 8px;
+  }
+
+}
+
+/* In your global CSS file */
+.rich-text-content {
+  width: 100%;
+}
+
+/* Reset Tailwind's default styling for HTML elements within rich-text-content */
+.rich-text-content h1,
+.rich-text-content h2,
+.rich-text-content h3,
+.rich-text-content h4,
+.rich-text-content h5,
+.rich-text-content h6,
+.rich-text-content p,
+.rich-text-content ul,
+.rich-text-content ol,
+.rich-text-content li,
+.rich-text-content blockquote,
+.rich-text-content pre,
+.rich-text-content table,
+.rich-text-content tr,
+.rich-text-content td,
+.rich-text-content th {
+  all: revert; /* This resets all properties to their natural values */
+}
+
+/* Ensure images don't exceed container width */
+.rich-text-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure proper spacing between elements */
+.rich-text-content > *:not(:last-child) {
+  margin-bottom: 1em;
+}
+
+
+.bottom_nav_icon svg, 
+.bottom_nav_icon svg path,
+.bottom_nav_icon svg g{
+  fill: var(--primary-color) !important;
+}
+
+.dark .bottom_nav_icon_white svg,
+.dark .bottom_nav_icon_white svg path,
+.dark .bottom_nav_icon_white svg g{
+  fill: #ffffff !important;
 }

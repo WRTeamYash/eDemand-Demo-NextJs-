@@ -21,14 +21,14 @@ const CategoryBreadcrumb = ({ selectedCategories }) => {
   const pathSegments = router.asPath.split('/');
   const lastSlug = pathSegments[pathSegments.length - 1];
 
+  
   const handleCategoryClick = (slug, event) => {
-    // Prevent the default anchor link behavior
-    event.preventDefault();
+    event.preventDefault(); // Prevent default link behavior
 
-    // Dispatch the action to remove the clicked category by slug
+    // Remove clicked category
     dispatch(removeCategoryBySlug(slug));
 
-    // Redirect the user to the appropriate path after trimming
+    // Redirect to the new trimmed path
     const currentPath = router.asPath;
     const pathSegments = currentPath.split("/");
     const clickedCategoryIndex = pathSegments.findIndex(
@@ -58,11 +58,11 @@ const CategoryBreadcrumb = ({ selectedCategories }) => {
           {/* Categories breadcrumb */}
           <BreadcrumbItem>
             <Link
-              href="/categories"
+              href="/services"
               className="text-sm font-normal hover:primary_text_color"
-              title={t("categories")}
+              title={t("services")}
             >
-              {t("categories")}
+              {t("services")}
             </Link>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="separator w-6">
@@ -70,27 +70,37 @@ const CategoryBreadcrumb = ({ selectedCategories }) => {
           </BreadcrumbSeparator>
 
           {/* Dynamically render category breadcrumbs */}
-          {selectedCategories.map((category, index) => (
-            <React.Fragment key={category?.id}>
-              <BreadcrumbItem>
-                <Link
-                  href="#"
-                  title={category?.name}
-                  className={`text-sm font-normal hover:primary_text_color ${
-                    category?.id === lastSlug ? "primary_text_color font-bold" : ""
-                  }`}
-                  onClick={(e) => handleCategoryClick(category.id, e)} // Pass event to the handler
-                >
-                  {category?.name}
-                </Link>
-              </BreadcrumbItem>
-              {index < selectedCategories.length - 1 && (
-                <BreadcrumbSeparator className="separator w-6">
-                  <ChevronRight className={`${isRTL ? "rotate-180" : "rotate-0"}`} />
-                </BreadcrumbSeparator>
-              )}
-            </React.Fragment>
-          ))}
+          {selectedCategories.map((category, index) => {
+            const isActive = category?.slug === lastSlug; // Check if category is active
+            return (
+              <React.Fragment key={category?.id}>
+                <BreadcrumbItem>
+                  {isActive ? (
+                    // Active category - Not clickable, styled as bold text
+                    <span className="text-sm font-normal primary_text_color">
+                      {category?.name}
+                    </span>
+                  ) : (
+                    // Non-active category - Clickable
+                    <Link
+                      href="#"
+                      title={category?.name}
+                      className="text-sm font-normal hover:primary_text_color"
+                      onClick={(e) => handleCategoryClick(category?.slug, e)}
+                    >
+                      {category?.name}
+                    </Link>
+                  )}
+                </BreadcrumbItem>
+
+                {index < selectedCategories.length - 1 && (
+                  <BreadcrumbSeparator className="separator w-6">
+                    <ChevronRight className={`${isRTL ? "rotate-180" : "rotate-0"}`} />
+                  </BreadcrumbSeparator>
+                )}
+              </React.Fragment>
+            );
+          })}
         </Breadcrumb>
       </div>
     </div>

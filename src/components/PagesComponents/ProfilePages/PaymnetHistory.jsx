@@ -23,13 +23,15 @@ import {
 import { useTranslation } from "@/components/Layout/TranslationContext";
 import { getTransactionApi } from "@/api/apiRoutes";
 import { toast } from "react-toastify";
-import { paymentModes, showPrice } from "@/utils/Helper";
+import { isMobile, paymentModes, showPrice, useRTL } from "@/utils/Helper";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import withAuth from "@/components/Layout/withAuth";
 import NoDataFound from "@/components/ReUseableComponents/Error/NoDataFound";
+import BreadCrumb from "@/components/ReUseableComponents/BreadCrumb";
 
 const PaymentHistory = () => {
   const t = useTranslation();
+  const isRtl = useRTL();
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalTransactions, setTotalTransactions] = useState(0);
@@ -108,25 +110,27 @@ const PaymentHistory = () => {
       }`,
     };
   };
+  
 
   return (
     <Layout>
-      <Breadcrumb
+      <BreadCrumb
         firstEle={t("paymentHistory")}
         firstEleLink="/payment-history"
+        isMobile={isMobile}
       />
-      <section className="profile_sec my-12">
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto">
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="col-span-12 lg:col-span-3">
+             <div className="col-span-12 lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
             {/* Main Content */}
             <div className="lg:col-span-9 col-span-12">
               <div className="flex flex-col gap-6">
-                <div className="page-headline text-2xl sm:text-3xl font-semibold">
+                <div className="page-headline text-xl md:text-2xl sm:text-3xl font-semibold border-b pb-3 md:pb-0 md:border-none">
                   <span>{t("paymentHistory")}</span>
                 </div>
 
@@ -135,8 +139,12 @@ const PaymentHistory = () => {
                   <Table className="w-full">
                     {/* Table Header */}
                     <TableHeader className="primary_bg_color text-white hover:!text-white">
-                      <TableRow className="text-white hover:bg-transparent border-none">
-                        <TableHead className="px-6 py-4 font-semibold text-center text-white first:rounded-tl-xl">
+                      <TableRow className="text-white hover:!bg-transparent border-none">
+                        <TableHead
+                          className={`px-6 py-4 font-semibold text-center text-white first:${
+                            isRtl ? "rounded-tr-xl" : "rounded-tl-xl"
+                          }`}
+                        >
                           {t("transactionId")}
                         </TableHead>
                         <TableHead className="px-6 py-4 font-semibold text-center text-white">
@@ -148,7 +156,11 @@ const PaymentHistory = () => {
                         <TableHead className="px-6 py-4 font-semibold text-center text-white">
                           {t("amount")}
                         </TableHead>
-                        <TableHead className="px-6 py-4 font-semibold text-center text-white last:rounded-tr-xl">
+                        <TableHead
+                          className={`px-6 py-4 font-semibold text-center text-white last:${
+                            isRtl ? "rounded-tl-xl" : "rounded-tr-xl"
+                          }`}
+                        >
                           {t("status")}
                         </TableHead>
                       </TableRow>
@@ -174,7 +186,7 @@ const PaymentHistory = () => {
                         transactions.map((row, index) => (
                           <TableRow
                             key={row.id}
-                            className={`${"card_bg hover:bg-gray-50 transition-colors"} ${
+                            className={`${"card_bg transition-colors"} ${
                               index === transactions.length - 1
                                 ? "last-row"
                                 : "border-b"

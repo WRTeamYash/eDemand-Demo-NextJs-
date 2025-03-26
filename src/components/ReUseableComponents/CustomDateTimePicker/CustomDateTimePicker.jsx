@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
+import { useTranslation } from "@/components/Layout/TranslationContext";
 
 const CustomDateTimePicker = ({ value, onChange, onClose, minDateTime = null, type = 'start' }) => {
+  const t = useTranslation();
   // Initialize with value if provided, otherwise null
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
   const [selectedHour, setSelectedHour] = useState(
@@ -100,7 +102,7 @@ const CustomDateTimePicker = ({ value, onChange, onClose, minDateTime = null, ty
 
   const handleOkClick = () => {
     if (!selectedDate) {
-      toast.error("Please select a date");
+      toast.error(t("pleaseSelectDate"));
       return;
     }
 
@@ -117,7 +119,7 @@ const CustomDateTimePicker = ({ value, onChange, onClose, minDateTime = null, ty
 
     // Strict validation against minDateTime
     if (type === 'endDateTime' && minDateTime && dayjs(newDate).isBefore(dayjs(minDateTime))) {
-      toast.error("Please select a time after the start time");
+      toast.error(t("pleaseSelectTimeAfterStartTime"));
       return;
     }
 
@@ -171,7 +173,7 @@ const CustomDateTimePicker = ({ value, onChange, onClose, minDateTime = null, ty
         {/* Time Picker */}
         <div className="w-full border rounded-lg p-2" ref={timePickerRef}>
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2">Select Time</h3>
+            <h3 className="text-sm font-medium mb-2">{t("selectTime")}</h3>
           </div>
           <div className="flex gap-2 h-[300px] w-full">
             {/* Hours */}
@@ -236,15 +238,15 @@ const CustomDateTimePicker = ({ value, onChange, onClose, minDateTime = null, ty
         <Button 
           variant="outline" 
           onClick={handleNowClick}
-          className="hover:bg-gray-50 text-sm h-8"
+          className="hover:bg-gray-50 text-sm h-8 hover:text-black"
         >
-          Now
+          {t("now")}
         </Button>
         <Button 
           onClick={handleOkClick}
-          className="primary_bg_color hover:opacity-90 text-white text-sm h-8"
+          className="primary_bg_color hover:opacity-90 text-white dark:text-black text-sm h-8"
         >
-          OK
+          {t("ok")}
         </Button>
       </div>
     </div>

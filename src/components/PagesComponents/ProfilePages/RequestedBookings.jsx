@@ -14,6 +14,7 @@ import { useTranslation } from '@/components/Layout/TranslationContext';
 import { selectBookingStatus } from '@/redux/reducers/helperSlice';
 import { useSelector } from 'react-redux';
 import withAuth from '@/components/Layout/withAuth';
+import { isMobile } from '@/utils/Helper';
 
 
 const RequestedBookings = () => {
@@ -71,13 +72,14 @@ const RequestedBookings = () => {
       <BreadCrumb
         firstEle={t("requestedBookings")}
         firstEleLink="/requested-bookings"
+        isMobile={isMobile}
       />
-      <section className="profile_sec my-12">
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto">
           {/* Grid layout */}
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="col-span-12 lg:col-span-3">
+             <div className="col-span-12 lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
@@ -112,7 +114,7 @@ const RequestedBookings = () => {
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-1 xl:grid-cols-2 gap-6">
                         {bookigs?.map((booking, index) => (
-                          <Link href={`/booking/${booking?.id}`} key={index}>
+                          <Link href={`/booking/${booking?.slug}`} key={index}>
                             <CustomBookingCard data={booking} />
                           </Link>
                         ))}

@@ -6,13 +6,14 @@ import { getRatings } from "@/api/apiRoutes";
 import MiniLoader from "../ReUseableComponents/MiniLoader";
 import NoDataFound from "../ReUseableComponents/Error/NoDataFound";
 import { useTranslation } from "../Layout/TranslationContext";
-const ProviderReviewTab = ({ providerData }) => {
+import { Skeleton } from "../ui/skeleton";
+
+const ProviderReviewTab = ({ providerData, slug }) => {
   const t = useTranslation();
 
   const rating = providerData?.ratings;
-  const totalRating = providerData?.number_of_ratings;
+  const totalRating = providerData?.number_of_ratings || 0;
 
-  // Mock data for ratings and their counts
   const ratingData = [
     { rating: 5, count: providerData?.["5_star"] || 0 },
     { rating: 4, count: providerData?.["4_star"] || 0 },
@@ -21,58 +22,94 @@ const ProviderReviewTab = ({ providerData }) => {
     { rating: 1, count: providerData?.["1_star"] || 0 },
   ];
 
-  const [loading, setLoading] = useState(false);
-  const [isloadMore, setIsloadMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isLoadMore, setIsLoadMore] = useState(false);
   const [reviewsData, setReviewsData] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const limit = 5;
   const [offset, setOffset] = useState(0);
 
   const fetchReviews = async (append = false, customOffset = offset) => {
-    if (append) {
-      setIsloadMore(true); // Set Load More button state to loading
-    } else {
-      setLoading(true); // Set initial fetch to loading
-    }
+    append ? setIsLoadMore(true) : setLoading(true);
     try {
       const response = await getRatings({
         partner_id: providerData?.partner_id,
-        limit: limit,
+        limit,
         offset: customOffset,
+        provider_slug: slug,
       });
       if (response?.error === false) {
-        setReviewsData((prevReviews) =>
-          append ? [...prevReviews, ...response?.data] : response?.data
+        setReviewsData((prev) =>
+          append ? [...prev, ...response.data] : response.data
         );
         setTotalReviews(response?.total);
       } else {
         setReviewsData([]);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
-      setIsloadMore(false);
+      setIsLoadMore(false);
     }
   };
 
   const handleLoadMore = async () => {
-    // Compute the new offset value
     const newOffset = offset + limit;
-    setOffset(newOffset); // Update the state for offset
-
-    // Pass the computed offset directly to fetchAllProviders
-    await fetchReviews(true, newOffset); // Ensure the correct offset is used
+    setOffset(newOffset);
+    await fetchReviews(true, newOffset);
   };
 
   useEffect(() => {
     fetchReviews(false, 0);
   }, []);
 
+  const RatingSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-12 border rounded-md px-4 py-6 gap-4 animate-pulse">
+      <div className="col-span-12 md:col-span-3">
+        <div className="flex flex-col items-center justify-center w-full h-full rounded-md px-4 py-6">
+          <Skeleton className="h-8 w-16 mb-2" />
+          <Skeleton className="h-5 w-24 mb-2" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+      <div className="col-span-12 md:col-span-9 space-y-4">
+        {[...Array(5)].map((_, index) => (
+          <div className="flex gap-4 items-center" key={index}>
+            <Skeleton className="h-4 w-6" />
+            <Skeleton className="h-2 flex-1 rounded-lg" />
+            <Skeleton className="h-4 w-10" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const ReviewCardSkeleton = () => (
+    <div className="p-4 border rounded-md animate-pulse space-y-2">
+      <Skeleton className="h-6 w-1/3 mb-2" />
+      <Skeleton className="h-4 w-2/3 mb-1" />
+      <Skeleton className="h-4 w-full mb-1" />
+      <Skeleton className="h-4 w-5/6" />
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <>
+        <RatingSkeleton />
+        <div className="space-y-4 mt-8">
+          {[...Array(3)].map((_, index) => (
+            <ReviewCardSkeleton key={index} />
+          ))}
+        </div>
+      </>
+    );
+  }
+
   return reviewsData.length > 0 ? (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-12 border rounded-md px-4 py-6 gap-4">
-        {/* Left column for rating summary */}
         <div className="col-span-12 md:col-span-3">
           <div className="flex flex-col items-center justify-center w-full h-full light_bg_color rounded-md px-4 py-6">
             <span className="text-[28px] font-medium primary_text_color">
@@ -84,11 +121,13 @@ const ProviderReviewTab = ({ providerData }) => {
             </span>
           </div>
         </div>
-
-        {/* Right column for rating progress */}
         <div className="col-span-12 md:col-span-9">
           {ratingData.map((item) => {
-            const progressPercentage = (item.count / totalRating) * 100;
+            const progressPercentage =
+              totalRating > 0
+                ? Math.round((item.count / totalRating) * 100) // Round to nearest whole number
+                : 0;
+
             return (
               <div className="rating_progress mb-4" key={item.rating}>
                 <div className="flex gap-4 items-center">
@@ -96,9 +135,9 @@ const ProviderReviewTab = ({ providerData }) => {
                   <Progress
                     value={progressPercentage}
                     className="progress flex-1 h-2 mx-2 rounded-lg"
-                    style={{ fill: "#4caf50" }}
                   />
-                  <span className="">{item.count}</span>
+                  <span>{progressPercentage}%</span>{" "}
+                  {/* Show whole number percentage */}
                 </div>
               </div>
             );
@@ -106,19 +145,15 @@ const ProviderReviewTab = ({ providerData }) => {
         </div>
       </div>
 
-      {/* Reviews Section */}
       <div className="reviews mt-8">
         <span className="text-2xl font-semibold">{t("reviews")}</span>
-
         <div className="space-y-8 mt-6">
           {reviewsData.map((review) => (
             <ProviderReviewCard review={review} key={review.id} />
           ))}
         </div>
-
-        {/* Load More Button */}
         <div className="flex items-center justify-center mt-6">
-          {isloadMore ? (
+          {isLoadMore ? (
             <button className="primary_bg_color primary_text_color py-3 px-8 rounded-xl">
               <MiniLoader />
             </button>
@@ -127,7 +162,7 @@ const ProviderReviewTab = ({ providerData }) => {
               <button
                 onClick={handleLoadMore}
                 className="light_bg_color primary_text_color py-3 px-8 rounded-xl"
-                disabled={isloadMore}
+                disabled={isLoadMore}
               >
                 {t("loadMore")}
               </button>

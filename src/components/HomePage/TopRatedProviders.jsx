@@ -2,7 +2,7 @@ import React from 'react'
 import CommanHeadline from '../ReUseableComponents/CommanHeadline';
 import { Swiper, SwiperSlide } from "swiper/react";
 import 'swiper/css';
-import { Autoplay, FreeMode } from 'swiper/modules';
+import { Autoplay, FreeMode, Pagination } from 'swiper/modules';
 import TopRatedProviderCard from '../Cards/TopRatedProviderCard';
 import { useRTL } from '@/utils/Helper';
 
@@ -38,7 +38,7 @@ const TopRatedProviders = ({sectionData}) => {
 
     return (
         <div className='py-8'>
-            <div className='container mx-auto px-4 md:px-8'>
+            <div className='container mx-auto px-4 md:px-8 topRatedProviders'>
                 <CommanHeadline
                     headline={sectionData?.title}
                     subHeadline={sectionData?.description}
@@ -46,7 +46,7 @@ const TopRatedProviders = ({sectionData}) => {
                 />
                 <div>
                     <Swiper
-                        modules={[Autoplay, FreeMode]} // Include FreeMode module
+                        modules={[Autoplay, FreeMode,Pagination]} // Include FreeMode module
                         spaceBetween={30}
                         loop={true}
                         key={isRTL}
@@ -54,6 +54,10 @@ const TopRatedProviders = ({sectionData}) => {
                         autoplay={{ delay: 3000 }} // Autoplay functionality
                         freeMode={true} // Enable free mode
                         breakpoints={breakpoints} // Add breakpoints here
+                        navigation
+                        pagination={{
+                          clickable: true,
+                        }}
                         className="mySwiper"
                     >
                         {sectionData?.partners?.map(provider => (

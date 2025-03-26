@@ -2,10 +2,7 @@
 import react, { useState, useEffect } from "react";
 import Layout from "@/components/Layout/Layout";
 import BreadCrumb from "@/components/ReUseableComponents/BreadCrumb";
-import React from "react";
 import SideNavigation from "./SideNavigation";
-import ProviderCard from "@/components/Cards/ProviderCard";
-import providerImg from "@/assets/nearbyprovider.png";
 import NearbyProviderCard from "@/components/Cards/NearbyProviderCard";
 import { bookmark } from "@/api/apiRoutes";
 import { useSelector } from "react-redux";
@@ -16,6 +13,7 @@ import NearbyProviderCardSkeleton from "@/components/Skeletons/NearbyProviderCar
 import NoDataFound from "@/components/ReUseableComponents/Error/NoDataFound";
 import { useTranslation } from "@/components/Layout/TranslationContext";
 import withAuth from "@/components/Layout/withAuth";
+import { isMobile } from "@/utils/Helper";
 
 const BookMarks = () => {
   const t = useTranslation();
@@ -93,13 +91,13 @@ const BookMarks = () => {
 
   return (
     <Layout>
-      <BreadCrumb firstEle={t("bookmarks")} firstEleLink="/bookmarks" />
-      <section className="profile_sec my-12">
+      <BreadCrumb firstEle={t("bookmarks")} firstEleLink="/bookmarks" isMobile={isMobile}/>
+      <section className="profile_sec md:my-12">
         <div className="container mx-auto">
           {/* Grid layout */}
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar */}
-            <div className="col-span-12 lg:col-span-3">
+            <div className="col-span-12 lg:col-span-3 hidden md:block">
               <SideNavigation />
             </div>
 
@@ -128,11 +126,7 @@ const BookMarks = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-1 xl:grid-cols-2 gap-6">
                     {providersData.map((provider, index) => (
                       <Link
-                        href={`/provider-details/${
-                          provider?.partner_id
-                            ? provider?.partner_id
-                            : provider?.id
-                        }`}
+                        href={`/provider-details/${provider?.slug}`}
                         title={provider?.name}
                         key={index}
                       >
@@ -159,7 +153,7 @@ const BookMarks = () => {
                         className="light_bg_color primary_text_color py-3 px-8 rounded-xl"
                         disabled={isloadMore}
                       >
-                       {t("loadMore")}
+                        {t("loadMore")}
                       </button>
                     )
                   )}

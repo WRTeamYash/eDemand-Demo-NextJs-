@@ -1,5 +1,4 @@
 "use client";
-import { placeholderImage } from "@/utils/Helper";
 import React from "react";
 import CustomImageTag from "./CustomImageTag";
 import { useRouter } from "next/router";
@@ -23,17 +22,17 @@ const Banner = ({ banner }) => {
 
       case "banner_provider":
         // For "provider", open the provider route in a new tab
-        const providerRoute = `/provider-details/${banner?.type_id}`;
+        const providerRoute = `/provider-details/${banner?.provider_slug}`;
         router.push(providerRoute);
         break;
 
       case "banner_category":
         const cateID =
           banner?.category_parent_id === "0"
-            ? banner?.type_id
-            : banner?.category_parent_id;
+            ? banner?.category_slug
+            : banner?.parent_category_slug;
         // For "category", open the category route in a new tab
-        const categoryRoute = `/categories/${cateID}`;
+        const categoryRoute = `/services/${cateID}`;
         router.push(categoryRoute);
         break;
 
@@ -45,16 +44,13 @@ const Banner = ({ banner }) => {
 
   return (
     <div
-      className="h-auto md:h-[400px] w-full cursor-pointer bg-transparent"
+      className="h-[130px] md:h-[400px] w-full cursor-pointer bg-transparent"
       onClick={(e) => handleRouteBanner(e, bannerData)}
     >
       <CustomImageTag
         src={bannerData?.web_banner_image}
         alt="banner"
-        width={0}
-        height={0}
-        className="object-contain w-full h-full bg-transparent"
-        onError={placeholderImage}
+        className="object-cover md:object-contain w-full h-full bg-transparent"
       />
     </div>
   );

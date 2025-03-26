@@ -1,6 +1,4 @@
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import serviceImg from "../../assets/pservice.png";
 import {
   FaClock,
   FaUserFriends,
@@ -9,7 +7,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { MdOutlineDelete } from "react-icons/md";
-import { isLogin, placeholderImage, showPrice } from "@/utils/Helper";
+import { isLogin, showPrice } from "@/utils/Helper";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import { useDispatch, useSelector } from "react-redux";
 import { ManageCartApi, removeCartApi } from "@/api/apiRoutes";
@@ -24,7 +22,6 @@ import { useTranslation } from "../Layout/TranslationContext";
 
 const CartItemCard = ({ data }) => {
   const t = useTranslation();
-
   const isLoggedIn = isLogin();
   const dispatch = useDispatch();
   // Access total item count using the selector
@@ -81,8 +78,8 @@ const CartItemCard = ({ data }) => {
           })
         );
         // dispatch(updateQuantity({ itemId: id, qty: newQuantity }));
-        toast.success(response?.message);
-
+        toast.success(t("serviceUpdatedSuccessFullyToCart")); 
+        
         setTimeout(() => {
           setAnimationClasses((prev) => ({ ...prev, [id]: "" }));
         }, 300);
@@ -119,8 +116,8 @@ const CartItemCard = ({ data }) => {
               items: structuredCartItems || [], // Assuming 'data' contains the cart items
             })
           );
-          // dispatch(updateQuantity({ itemId: id, qty: currentQty - 1 }));
-
+          
+          toast.success(t("serviceUpdatedSuccessFullyToCart"));
           setTimeout(() => {
             setAnimationClasses((prev) => ({ ...prev, [id]: "" }));
           }, 300);
@@ -160,7 +157,7 @@ const CartItemCard = ({ data }) => {
           delete updatedQuantities[id];
           setQuantities(updatedQuantities);
           dispatch(removeFromCart(id));
-          toast.success("Item removed from cart.");
+          toast.success(t("serviceRemovedSuccessFullyFromCart"));
         } else {
           toast.error(response?.message);
         }
@@ -199,7 +196,7 @@ const CartItemCard = ({ data }) => {
         );
 
         setQuantities((prev) => ({ ...prev, [data.id]: 1 }));
-        toast.success(response?.message);
+        toast.success(t("serviceAddedSuccessFullyToCart"));
       } else {
         toast.error(response?.message);
       }
@@ -217,9 +214,6 @@ const CartItemCard = ({ data }) => {
           src={data?.image_of_the_service}
           alt="service_img"
           className="w-full h-full object-cover rounded-[8px]"
-          width={0}
-          height={0}
-          onError={placeholderImage}
         />
       </div>
 
@@ -232,11 +226,11 @@ const CartItemCard = ({ data }) => {
               {data?.title}
             </span>
             <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-              <span className="flex items-center">
+              <span className="flex items-center gap-2">
                 <FaUserFriends className="mr-1 primary_text_color" />
                 {data?.number_of_members_required}
               </span>
-              <span className="flex items-center">
+              <span className="flex items-center gap-2">
                 <FaClock className="mr-1 primary_text_color" />
                 {data?.duration}
               </span>
@@ -248,15 +242,15 @@ const CartItemCard = ({ data }) => {
             {data?.discounted_price > 0 ? (
               <>
                 <span className="text-sm sm:text-base font-bold text-black dark:text-white">
-                  {showPrice(data?.discounted_price)}
+                  {showPrice(data?.price_with_tax)}
                 </span>
                 <span className="text-xs sm:text-sm text-gray-400 line-through">
-                  {showPrice(data?.price)}
+                  {showPrice(data?.original_price_with_tax)}
                 </span>
               </>
             ) : (
               <span className="text-sm sm:text-base font-bold text-black dark:text-white">
-                {showPrice(data?.price)}
+                {showPrice(data?.price_with_tax)}
               </span>
             )}
           </div>

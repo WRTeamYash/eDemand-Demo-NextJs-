@@ -65,26 +65,26 @@ const Share = ({ title }) => {
         className="flex flex-col space-y-3 p-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 w-48"
       >
         <WhatsappShareButton url={url} title={shareMessage}>
-          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition gap-2">
             <FaWhatsapp size={20} className="text-green-500" />
             <span>{t("whatsapp")}</span>
           </div>
         </WhatsappShareButton>
         <TwitterShareButton url={url} title={shareMessage}>
-          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transitio gap-2n">
             <FaXTwitter size={20} className="text-black dark:text-white" />
             <span>{t("twitter")}</span>
           </div>
         </TwitterShareButton>
         <FacebookShareButton url={url} quote={shareMessage}>
-          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition gap-2">
             <FaFacebook size={20} className="text-blue-700" />
             <span>{t("facebook")}</span>
           </div>
         </FacebookShareButton>
         <button
           onClick={openInstagram}
-          className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition gap-2"
         >
           <FaInstagram size={20} className="text-black dark:text-white" />
           <span>{t("instagram")}</span>
@@ -94,13 +94,13 @@ const Share = ({ title }) => {
           subject={title}
           body={`${shareMessage} - ${url}`}
         >
-          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition gap-2">
             <FaEnvelope size={20} className="text-gray-600" />
             <span>{t("email")}</span>
           </div>
         </EmailShareButton>
         <div
-          className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition gap-2"
           onClick={copyToClipboard}
         >
           <FaLink size={20} className="text-gray-500" />

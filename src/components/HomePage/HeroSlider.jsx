@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { IoLocationOutline, IoSearchOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { convertToSlug, placeholderImage, useRTL } from "@/utils/Helper";
+import { convertToSlug, useRTL } from "@/utils/Helper";
 import { FiChevronRight } from "react-icons/fi";
 
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
@@ -82,9 +82,8 @@ const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL }) => {
         <button
           key={index}
           onClick={() => goToSlide(index)}
-          className={`rounded-full transition-all relative overflow-hidden light_bg_color border border-[#ebf4ff] ${
-            index === currentSlide ? "w-6 h-3" : "w-3 h-3"
-          } ${isRTL ? "ml-2" : "mr-2"} last:m-0`}
+          className={`rounded-full transition-all relative overflow-hidden light_bg_color border border-[#ebf4ff] ${index === currentSlide ? "w-6 h-3" : "w-3 h-3"
+            } ${isRTL ? "ml-2" : "mr-2"} last:m-0`}
           aria-label={`Go to slide ${index + 1}`}
         >
           {index === currentSlide && (
@@ -148,7 +147,7 @@ const HeroSlider = ({ sliderData }) => {
             ? slide?.type_id
             : slide?.category_parent_id;
         // For "category", open the category route in a new tab
-        const categoryRoute = `/categories/${cateID}`;
+        const categoryRoute = `/services/${cateID}`;
         router.push(categoryRoute);
         break;
 
@@ -161,7 +160,7 @@ const HeroSlider = ({ sliderData }) => {
   const handleSearchServiceOrProvider = () => {
     if (!searchQuery.trim()) {
       // Show a toast error when search query is empty
-      toast.error("Please type a service or provider name!");
+      toast.error(t("pleaseTypeServiceOrProviderName"));
       return; // Exit the function
     }
 
@@ -195,81 +194,89 @@ const HeroSlider = ({ sliderData }) => {
       };
     }
   }, []);
-
+  const isSliderData = sliderData && sliderData?.length > 0
   return (
-    <div className="relative pb-16">
-      <div className="relative w-full h-[500px] md:h-[600px] xl:h-[700px] group">
-        <Swiper
-          modules={[Autoplay, Navigation, Pagination]}
-          spaceBetween={0}
-          slidesPerView={1}
-          dir={isRTL ? "rtl" : "ltr"}
-          key={isRTL}
-          loop={true}
-          onSlideChange={handleSlideChange}
-          navigation={{
-            prevEl: ".swiper-button-prev",
-            nextEl: ".swiper-button-next",
-          }}
-          // autoplay={false} // Prevents autoplay pause on hover
-          autoplay={{ delay: 3000, pauseOnMouseEnter: false }} // Prevents autoplay pause on hover
-          pagination={{ clickable: true }}
-          className="h-[500px] md:h-[600px] xl:h-[700px]"
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-        >
-          {sliderData.map((slide, index) => (
-            <SwiperSlide
-              key={slide?.id}
-              onClick={(e) => handleRouteSlider(e, slide)}
+    <div className={`relative  ${isSliderData ? "pb-16" : ""} heroSliderSection commonMT`}>
+      <div className={`relative w-full  group ${isSliderData ? "h-[200px] sm:h-[450px] md:h-[600px] xl:h-[700px]" : "h-full my-10"}`}>
+        {isSliderData ? (
+          <>
+            <Swiper
+              modules={[Autoplay, Navigation, Pagination]}
+              spaceBetween={0}
+              slidesPerView={1}
+              dir={isRTL ? "rtl" : "ltr"}
+              key={isRTL}
+              loop={true}
+              onSlideChange={handleSlideChange}
+              navigation={{
+                prevEl: ".swiper-button-prev",
+                nextEl: ".swiper-button-next",
+              }}
+              // autoplay={false} // Prevents autoplay pause on hover
+              autoplay={{ delay: 3000, pauseOnMouseEnter: false }} // Prevents autoplay pause on hover
+              pagination={{ clickable: true }}
+              className="h-[176px] sm:h-[500px] md:h-[600px] xl:h-[700px]"
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
             >
-              <CustomImageTag
-                alt="slider_image"
-                src={slide?.slider_web_image}
-                width={0}
-                height={0}
-                onError={placeholderImage}
-                className="w-full h-[450px] md:h-full object-contain cursor-pointer"
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+              {sliderData.map((slide, index) => (
+                <SwiperSlide
+                  key={slide?.id}
+                  onClick={(e) => handleRouteSlider(e, slide)}
+                >
+                  <CustomImageTag
+                    alt="slider_image"
+                    src={slide?.slider_web_image}
+                    className="w-full h-[160px] sm:h-[500px] md:h-full object-contain cursor-pointer"
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
-        {/* Custom navigation buttons */}
-        <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <CustomNavigation
-            onPrev={() => swiperRef.current?.slidePrev()}
-            onNext={() => swiperRef.current?.slideNext()}
-          />
-        </div>
+            {sliderData?.length > 1 && (
+              <>
+                {/* Custom navigation buttons */}
+                <div className="hidden sm:hidden md:group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <CustomNavigation
+                    onPrev={() => swiperRef.current?.slidePrev()}
+                    onNext={() => swiperRef.current?.slideNext()}
+                  />
+                </div>
 
-        {/* Custom pagination */}
-        <CustomPagination
-          totalSlides={sliderData?.length}
-          currentSlide={currentSlide}
-          goToSlide={(index) => swiperRef.current?.slideTo(index)}
-          isRTL={isRTL}
-        />
 
-        <div className="searchLocation">
-          <div className="container mx-auto">
-            <div className="card_bg rounded-xl p-4 relative -mt-20 md:-mt-8 left-0 right-0 mx-auto z-10 max-w-full lg:max-w-4xl flex flex-col md:flex-row items-center justify-between border border-[#2121212e] gap-4">
+                {/* Custom pagination */}
+                <div className="hidden md:block">
+                  <CustomPagination
+                    totalSlides={sliderData?.length}
+                    currentSlide={currentSlide}
+                    goToSlide={(index) => swiperRef.current?.slideTo(index)}
+                    isRTL={isRTL}
+                  />
+                </div>
+              </>
+            )}
+          </>
+        ) : null}
+
+
+        <div className="light_bg_color pt-6 -mt-6 sm:mt-0 md:pt-0 md:bg-transparent searchLocation">
+          <div className="container md:mx-auto">
+            <div className={`md:card_bg rounded-xl py-4 md:p-4 relative ${isSliderData ? " md:-mt-8" : "mt-0"} left-0 right-0 mx-auto z-10 max-w-full lg:max-w-4xl flex flex-row items-center justify-between md:border border-[#2121212e] gap-4`}>
               {/* Location Section */}
-              <div className="location flex items-center w-full md:w-1/2 text-center md:text-left">
+              <div className="bg-white dark:bg-[#212121] p-3 rounded-[6px] md:rounded-none md:p-0 md:bg-transparent location flex items-center w-max md:w-1/2 text-center md:text-left" onClick={() => setIsModalOpen(true)}>
                 <div className="flex flex-1 items-center justify-between  w-full">
                   <IoLocationOutline size={24} className="primary_text_color max-w-6 w-full" />
                   <input
                     readOnly
-                    className="ml-2 focus:outline-none w-full text-sm sm:text-base bg-transparent"
+                    className="hidden md:block ml-2 focus:outline-none w-full text-sm sm:text-base bg-transparent"
                     placeholder={t("enterLocation")}
                     value={locationData?.locationAddress}
                   />
                   <div
-                    className={`flex flex-1 items-center w-full ${isRTL ? "rotate-180" : "rotate-0"}`}
-                    onClick={() => setIsModalOpen(true)}
+                    className={`hidden md:flex flex-1 items-center w-full ${isRTL ? "rotate-180" : "rotate-0"}`}
                   >
-                   {""} <FiChevronRight size={24} />
+                    {""} <FiChevronRight size={24} />
                   </div>
                 </div>
               </div>
@@ -278,7 +285,7 @@ const HeroSlider = ({ sliderData }) => {
               <div className="hidden md:block divider h-6 w-px bg-gray-300"></div>
 
               {/* Search Input */}
-              <div className="searchProvider w-full md:w-1/2 flex items-center gap-1">
+              <div className="bg-white dark:bg-[#212121] p-3 rounded-[12px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.04)] border-[0.5px] md:shadow-none md:border-none md:rounded-none md:p-0 md:bg-transparent searchProvider w-full md:w-1/2 flex items-center gap-2">
                 <IoSearchOutline size={24} className="description_color" />
 
                 <input
@@ -292,10 +299,10 @@ const HeroSlider = ({ sliderData }) => {
 
               {/* Search Button */}
               <div
-                className="search w-full md:w-auto text-center md:text-end"
+                className="absolute top-[26px] right-2 md:relative md:top-0 md:right-0 search w-max md:w-auto text-center md:text-end"
                 onClick={handleSearchServiceOrProvider}
               >
-                <button className="primary_bg_color text-white rounded-md px-6 py-2 w-full md:w-auto transition">
+                <button className="primary_bg_color text-white rounded-md text-xs sm:text-base px-2 py-1 sm:px-3 md:px-6 md:py-2 w-full md:w-auto transition">
                   {t("search")}
                 </button>
               </div>

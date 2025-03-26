@@ -1,22 +1,22 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { getCategoriesApi } from "@/api/apiRoutes";
 import HomeCategoryCard from "@/components/Cards/HomeCategoryCard";
 import Layout from "@/components/Layout/Layout";
 import BreadCrumb from "@/components/ReUseableComponents/BreadCrumb";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addCategory,
   clearCategories,
 } from "../../redux/reducers/multiCategoriesSlice";
-import { getCategoriesApi } from "@/api/apiRoutes";
-import HomeCategoryCardSkeleton from "../Skeletons/HomeCategoryCardSkeleton";
 import { useTranslation } from "../Layout/TranslationContext";
-import NoDataFound from "../ReUseableComponents/Error/NoDataFound";
+import HomeCategoryCardSkeleton from "../Skeletons/HomeCategoryCardSkeleton";
 
 const AllCategories = () => {
   const locationData = useSelector((state) => state?.location);
   const t = useTranslation();
+
 
   const [categories, setCategories] = useState([]); // State for all categories
   const [displayedCategories, setDisplayedCategories] = useState([]); // Categories to be shown initially
@@ -33,7 +33,7 @@ const AllCategories = () => {
         longitude: locationData?.lng,
       });
       setCategories(response?.data); // Store all categories
-      setDisplayedCategories(response?.data.slice(0, 12)); // Display only the first 6 categories initially
+      setDisplayedCategories(response?.data.slice(0, 8)); // Display only the first 6 categories initially
       setTotal(response?.total);
     } catch (error) {
       console.log(error);
@@ -50,7 +50,7 @@ const AllCategories = () => {
   const handleRouteCategory = (category) => {
     dispatch(clearCategories());
     dispatch(addCategory(category));
-    router.push(`/categories/${category?.id}`);
+    router.push(`/services/${category?.slug}`);
   };
 
   const handleLoadMore = () => {
@@ -59,21 +59,19 @@ const AllCategories = () => {
 
   return (
     <Layout>
-      <BreadCrumb firstEle={"All Categories"} firstEleLink="/categories" />
+      <BreadCrumb firstEle={t("allServices")} firstEleLink="/services" />
       <section className="all-categories">
         <div className="commanSec mt-12 flex flex-col items-start justify-center gap-6 w-full container mx-auto">
           <div className="Headlines flex flex-col w-full">
-            <span className="text-2xl font-semibold">{t("allCategories")}</span>
-            <span className="description_color">
-              {total} {t("categories")}
-            </span>
+            <span className="text-2xl font-semibold">{t("allServices")}</span>
+            <span className="description_color">{total} {t("services")}</span>
           </div>
         </div>
-        <div className="commanDataSec light_bg_color p-4 w-full mt-6">
+        <div className="commanDataSec light_bg_color md:p-4 w-full mt-6">
           <div className="container mx-auto py-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {loading ? (
-                Array(12)
+            <div className="grid grid-cols-2  lg:grid-cols-4 gap-4">
+              {loading
+                ? Array(12)
                   .fill(0)
                   .map(
                     (
@@ -85,27 +83,18 @@ const AllCategories = () => {
                       </div>
                     )
                   )
-              ) : displayedCategories.length === 0 ? (
-                <div className="w-full h-[60vh] flex items-center justify-center">
-                <NoDataFound
-                  title={t("noCategoriesFound")}
-                  desc={t("noCategoriesFoundText")}
-                />
-              </div>
-              ) : (
-                displayedCategories.map((category, index) => (
+                : displayedCategories.map((category, index) => (
                   <div key={index}>
                     <HomeCategoryCard
                       data={category}
                       handleRouteCategory={handleRouteCategory}
                     />
                   </div>
-                ))
-              )}
+                ))}
             </div>
           </div>
         </div>
-        {displayedCategories.length < categories.length && (
+        {displayedCategories.length < total && (
           <div className="loadmore my-6 flex items-center justify-center">
             <button
               onClick={handleLoadMore}

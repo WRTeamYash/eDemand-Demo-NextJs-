@@ -24,6 +24,7 @@ import Link from "next/link";
 import { placeholderImage, showPrice, useRTL } from "@/utils/Helper";
 import { useTranslation } from "@/components/Layout/TranslationContext";
 import CustomImageTag from "../CustomImageTag";
+import { toast } from "react-toastify";
 
 const CartDropdown = ({ isVisible, onOpenChange }) => {
   const t = useTranslation();
@@ -40,9 +41,12 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
       const response = await removeCartApi({ itemId: itemId });
       if (response?.error === false) {
         dispatch(removeItemFromCart(itemId)); // Directly remove the item from Redux
+      }else{
+        toast.error(response.message)
       }
     } catch (error) {
       console.log(error);
+     
     }
   };
   const handleClearCart = async () => {
@@ -113,16 +117,16 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
                   <CustomImageTag
                     src={item?.image_of_the_service}
                     alt={item?.title}
-                    className="w-12 h-12 rounded-md object-cover"
+                    className="w-12 h-12 rounded-md object-cover min-w-12"
                   />
                   <div>
-                    <p className="text-sm font-medium">{item?.title}</p>
+                    <p className="text-sm font-medium line-clamp-1">{item?.title}</p>
                     <p className="text-sm description_color">
                       {showPrice(
                         formatPrice(
                           item?.discounted_price > 0
-                            ? item?.discounted_price
-                            : item?.price || 0 // Fallback to 0 if price is undefined
+                            ? item?.price_with_tax
+                            : item?.original_price_with_tax || 0 // Fallback to 0 if price is undefined
                         )
                       )}{" "}
                       x{item?.qty || 0}{" "}
@@ -156,7 +160,7 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
 
               <div className="flex justify-between gap-2">
                 <button
-                  className="w-1/2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="w-1/2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 hover:text-black transition-all duration-300"
                   onClick={(e) => {
                     e.preventDefault();
                     handleClearCart();

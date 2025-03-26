@@ -16,7 +16,7 @@ const LogoutDialog = ({ isOpen, onClose, onLogout }) => {
         </div>
 
         {/* Title */}
-        <h2 className="text-[22px] font-semibold mb-2 text-gray-900">
+        <h2 className="text-[22px] font-semibold mb-2">
           {t("logoutt")}
         </h2>
 

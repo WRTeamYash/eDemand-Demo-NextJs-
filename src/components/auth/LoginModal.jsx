@@ -3,12 +3,11 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
-import LightLogo from "@/assets/header_logo.png";
-import DarkLogo from "@/assets/footer.png";
 import {
   handleFirebaseAuthError,
-  placeholderImage,
+  isDemoMode,
   useIsDarkMode,
+  useRTL,
 } from "@/utils/Helper";
 import { MdClose } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
@@ -36,10 +35,16 @@ import {
 import MiniLoader from "../ReUseableComponents/MiniLoader";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { useTranslation } from "../Layout/TranslationContext";
+import Link from "next/link";
 
 const LoginModal = ({ open, close, setOpenProfileModal }) => {
   const t = useTranslation();
-  const isDarkMode = useIsDarkMode();
+  const isDemo = isDemoMode();
+  const isRtl = useRTL();
+
+  const demoMobileNumber = "919876543210";
+  const demoOtp = "123456";
+
   const { authentication } = FirebaseData(); // Destructure Firebase authentication
   const dispatch = useDispatch();
   const [phone, setPhone] = useState(""); // Phone number state
@@ -47,7 +52,7 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
   const [showFullPhoneNumber, setShowFullPhoneNumber] = useState(""); //show full number with dialcode
   const [showOtpScreen, setShowOtpScreen] = useState(false); // Toggle between phone and OTP screens
   const [otp, setOtp] = useState(new Array(6).fill("")); // OTP input state
-  const [timer, setTimer] = useState(90); // Timer in seconds
+  const [timer, setTimer] = useState(30); // Timer in seconds
   const [resendAvailable, setResendAvailable] = useState(false); // To track if resend is available
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
@@ -57,6 +62,15 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
   const settingsData = useSelector((state) => state?.settingsData);
   const fcmToken = settingsData?.fcmToken;
 
+  const websettings = settingsData?.settings?.web_settings;
+
+  useEffect(() => {
+    if (isDemo) {
+      setPhone(demoMobileNumber);
+      setShowFullPhoneNumber(demoMobileNumber);
+      setOtp(demoOtp.split(""));
+    }
+  }, [isDemo]);
   // Function to clear recaptchaVerifier
   const clearRecaptcha = useCallback(() => {
     try {
@@ -158,14 +172,14 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
   };
   const handleContinue = async () => {
     if (!phone) {
-      toast.error("Enter number");
+      toast.error(t("enterPhoneNumber"));
       return;
     }
     const phoneNumberWithoutDialCode = FormatPhoneNumber();
     const fullPhoneNumber = `+${countryCode}${phoneNumberWithoutDialCode}`;
 
     if (!isValidPhoneNumber(fullPhoneNumber)) {
-      return toast.error("Enter Valid Number");
+      return toast.error(t("enterValidNumber"));
     }
 
     try {
@@ -192,30 +206,34 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
         setShowFullPhoneNumber(fullPhoneNumber);
       } else {
         toast.error(response?.message);
+        setLoading(false);
       }
     } catch (error) {
       console.error("error", error);
-      toast.error("Something went wrong");
+      toast.error(t("somethingWentWrong"));
+      setLoading(false);
     }
   };
 
   // Timer logic to count down every second
   useEffect(() => {
-    if (timer > 0 && !resendAvailable) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
+    if (showOtpScreen) {
+      if (timer > 0 && !resendAvailable) {
+        const interval = setInterval(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
 
-      return () => clearInterval(interval);
-    } else if (timer === 0) {
-      setResendAvailable(true);
+        return () => clearInterval(interval);
+      } else if (timer === 0) {
+        setResendAvailable(true);
+      }
     }
-  }, [timer, resendAvailable]);
+  }, [timer, resendAvailable, showOtpScreen]);
 
   // Handle Resend OTP button
   const handleResendOtp = async () => {
     setResendAvailable(false);
-    setTimer(90);
+    setTimer(30);
     const phoneNumberWithoutDialCode = FormatPhoneNumber();
 
     try {
@@ -235,7 +253,7 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
       }
     } catch (error) {
       console.error("Error resending OTP:", error);
-      toast.error("Error resending OTP");
+      toast.error(t("errorResendingOTP"));
       setResendAvailable(true);
       setTimer(0);
     }
@@ -274,17 +292,22 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
         .catch((error) => {
           setLoading(false);
           console.error("Error sending OTP:", error);
-          toast.error("Error sending OTP. Please try again.");
+          toast.error(t("errorWhileSendingOTP"));
         });
     } else {
       setLoading(false);
       console.error("reCAPTCHA not initialized");
-      toast.error("reCAPTCHA not initialized. Please reload the page.");
+      toast.error(t("reCAPTCHAnotInitialized"));
     }
   };
 
   // Verify OTP
   const verifyOtp = async () => {
+    // Check if OTP is empty first
+    if (otp.every((digit) => digit === "")) {
+      toast.error(t("pleaseEnterOTP"));
+      return;
+    }
     setLoading(true);
     const otpString = otp.join("");
     const phoneNumberWithoutDialCode = FormatPhoneNumber();
@@ -320,16 +343,15 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
           dispatch(setUserAuthData(userAuthData));
           handleSuccessfulLogin(response.user);
         } else {
-          toast.error(response?.message || t("invalidOtp"));
+          toast.error(t("invalidOtp"));
         }
       }
     } catch (error) {
       console.error("Invalid OTP:", error);
       if (smsMethod === "firebase") {
         handleFirebaseAuthError(t, error.code);
-      }else{
+      } else {
         toast.error(t("invalidOtp"));
-
       }
     } finally {
       setLoading(false);
@@ -365,28 +387,27 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
       }
     } catch (error) {
       console.error("Error during login:", error);
-      toast.error("Something went wrong");
+      toast.error(t("somethingWentWrong"));
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
     const provider = new GoogleAuthProvider(); // Create a GoogleAuthProvider instance
     const auth = getAuth(); // Get Firebase auth instance
-  
+
     try {
       const result = await signInWithPopup(auth, provider); // Sign in with popup
       const user = result.user; // Get user details
-  
+
       if (user) {
         const userAuthData = {
           ...user,
           type: "google", // Add login type
         };
         dispatch(setUserAuthData(userAuthData));
-  
+
         const response = await verifyUserApi({ uid: user?.uid });
-  
+
         if (response.message_code === "101") {
           try {
             const registerResponse = await registerUserApi({
@@ -397,7 +418,6 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
               loginType: "google",
               uid: user?.uid,
             });
-            setLoading(false);
             dispatch(setUserData(registerResponse?.data));
             dispatch(setToken(registerResponse?.token));
             toast.success(registerResponse?.message);
@@ -406,19 +426,16 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
             console.error(error);
           }
         } else if (response.message_code === "102") {
-          setLoading(false);
           setOpenProfileModal(true);
           handleClose();
         } else if (response.message_code === "103") {
-          setLoading(false);
           toast.error(t("userDeactivated"));
           handleClose();
         }
       }
     } catch (error) {
       console.error("Error during Google Sign-In:", error.code);
-      setLoading(false);
-  
+
       if (error.code === "auth/popup-closed-by-user") {
         toast.error(t("popupClosedByUser")); // Show error toast immediately
       } else {
@@ -426,8 +443,6 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
       }
     }
   };
-  
-  
 
   return (
     <>
@@ -437,12 +452,9 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
           {/* Header */}
           <div className="w-full flex justify-between items-center mb-4">
             <CustomImageTag
-              width={0}
-              height={0}
-              src={!isDarkMode ? LightLogo.src : DarkLogo.src}
+              src={websettings?.web_logo}
               alt="logo"
-              className="h-[44px] w-[160px] aspect-square"
-              onError={placeholderImage}
+              className="h-full w-[160px] object-cover"
             />
             {/* Close Button */}
             <button
@@ -467,6 +479,7 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
               {/* Phone Input Field */}
               <div className="w-full h-[44px] card_bg">
                 <PhoneInput
+                  inputStyle={{ direction: isRtl ? "rtl" : "ltr" }}
                   country={process?.env?.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE} // Default country
                   value={phone} // Ensure value is properly linked to state
                   onChange={(value, data) => handleInputChange(value, data)}
@@ -499,7 +512,7 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
               {/* Divider */}
               <div className="relative flex justify-center items-center my-4">
                 <span className="w-1/3 h-[1px] bg-gray-300"></span>
-                <span className="px-2 text-sm description_color">
+                <span className="px-2 text-sm description_color text-center">
                   {t("orContinueWith")}
                 </span>
                 <span className="w-1/3 h-[1px] bg-gray-300"></span>
@@ -519,13 +532,19 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
               {/* Footer */}
               <p className="text-xs text-center description_color mt-6">
                 {t("byClickingContinueYouAgreeToOur")}{" "}
-                <a href="#" className="primary_text_color underline">
+                <Link
+                  href="/terms-and-conditions"
+                  className="primary_text_color underline"
+                >
                   {t("termsOfService")}
-                </a>{" "}
+                </Link>{" "}
                 &{" "}
-                <a href="#" className="primary_text_color underline">
+                <Link
+                  href="/privacy-policy"
+                  className="primary_text_color underline"
+                >
                   {t("privacyPolicy")}
-                </a>
+                </Link>
               </p>
             </>
           ) : (
@@ -535,7 +554,12 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
               <p className="description_color ">
                 {t("weJustSentYouSixDigitCode")}
                 <br />
-                <span className="font-bold">{showFullPhoneNumber}</span>
+                <span
+                  className="font-bold"
+                  style={{ direction: "ltr", unicodeBidi: "isolate" }}
+                >
+                  {showFullPhoneNumber}
+                </span>
               </p>
               <a
                 href="#"
@@ -557,7 +581,8 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
                     onChange={(e) => handleOtpChange(e.target.value, index)}
                     onKeyDown={(e) => handleOtpKeyDown(e, index)}
                     ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
-                    className="w-12 h-12 text-center border rounded-md text-xl"
+                    className="transition-all duration-300 w-10 h-10 lg:w-12 lg:h-12 text-center border border-gray-300 rounded-md text-xl 
+                    focus:light_bg_color focus:border_color focus:ring-0"
                   />
                 ))}
               </div>

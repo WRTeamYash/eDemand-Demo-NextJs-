@@ -1,5 +1,6 @@
 import React from "react";
-import { useTranslation } from "@/utils/TranslationContext"; // Adjust the import based on your translation setup
+import { maintanceModeImage } from "./Images";
+import { useTranslation } from "@/components/Layout/TranslationContext";
 
 const MaintenanceMode = () => {
     const  t  = useTranslation();
@@ -7,31 +8,27 @@ const MaintenanceMode = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center card_bg text-center p-4">
       {/* Main Content */}
-      <div className="max-w-md space-y-6">
+      <div className="max-w-md space-y-6 flex flex-col items-center justify-center">
         {/* Illustration */}
-        <img
-          src="https://via.placeholder.com/300"
-          alt="Maintenance Illustration"
-          className="w-64 mx-auto"
-        />
+        {maintanceModeImage}
 
         {/* Title */}
-        <h1 className="text-2xl md:ext-6xl font-bold text-gray-800">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
           {t("maintenanceModeTitle")}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base md:text-xl text-gray-600">
+        <p className="text-base md:text-xl text-gray-600 dark:text-white">
           {t("maintenanceModeText")}
         </p>
 
         {/* Call-to-Action Button */}
-        <a
+        {/* <a
           href="/"
           className="inline-block px-6 py-3 primary_text_color light_bg_color text-white font-semibold rounded-lg transition duration-300"
         >
           {t("goBackHomeHomePage")}
-        </a>
+        </a> */}
       </div>
     </div>
   );

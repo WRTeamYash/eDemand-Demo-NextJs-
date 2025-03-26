@@ -16,8 +16,9 @@ import {
   setLanguage as setReduxLanguage,
   setTranslations,
 } from "@/redux/reducers/translationSlice";
-import { useTranslation } from "@/components/Layout/TranslationContext";
+
 import { toast } from "react-toastify";
+import { useTranslation } from "@/components/Layout/TranslationContext";
 
 export const useIsDarkMode = () => {
   const reduxTheme = useSelector(selectTheme);
@@ -100,9 +101,7 @@ export const placeholderImage = (e) => {
   const placeholderLogo = settings?.web_half_logo;
   if (placeholderLogo) {
     e.target.src = placeholderLogo;
-    e.target.style.opacity = 0.5;
-    e.target.style.width = "100%";
-    e.target.style.objectFit = "contain";
+    e.target.classList.add("opacity-30", "w-full", "object-contain"); // Add Tailwind classes
   }
 };
 
@@ -148,9 +147,9 @@ export const statusNames = {
 };
 
 export const customJobStatusNames = {
-  pending: "Requested",
-  booked: "Booked",
-  cancelled: "Cancelled",
+  pending: "requested",
+  booked: "booked",
+  cancelled: "cancelled",
 };
 
 export const customJobStatusColors = {
@@ -196,21 +195,21 @@ export const getPaymentStatusUI = (status) => {
         bgClass: "bg-green-100 text-green-600",
         iconClass: "bg-green-600",
         icon: <FaCheckCircle size={20} />, // React Icon for success
-        iconText: "Success",
+        iconText: "success",
       };
     case "pending":
       return {
         bgClass: "bg-yellow-100 text-yellow-600",
         iconClass: "bg-yellow-600",
         icon: <FaHourglassHalf size={20} />, // React Icon for pending
-        iconText: "Pending",
+        iconText: "pending",
       };
     case "failed":
       return {
         bgClass: "bg-red-100 text-red-600",
         iconClass: "bg-red-600",
         icon: <FaTimesCircle size={20} />, // React Icon for cancelled
-        iconText: "Failed",
+        iconText: "failed",
       };
     default:
       return null;
@@ -224,21 +223,21 @@ export const getPaymentStatusAdditionalChargeUI = (status) => {
         bgClass: "bg-green-100 text-green-600",
         iconClass: "bg-green-600",
         icon: <FaCheckCircle size={20} />, // React Icon for success
-        iconText: "Success",
+        iconText: "success",
       };
     case "0":
       return {
         bgClass: "bg-yellow-100 text-yellow-600",
         iconClass: "bg-yellow-600",
         icon: <FaHourglassHalf size={20} />, // React Icon for pending
-        iconText: "Pending",
+        iconText: "pending",
       };
     case "2":
       return {
         bgClass: "bg-red-100 text-red-600",
         iconClass: "bg-red-600",
         icon: <FaTimesCircle size={20} />, // React Icon for cancelled
-        iconText: "Failed",
+        iconText: "failed",
       };
     default:
       return null;
@@ -299,12 +298,49 @@ export async function DownloadInvoice(id, setDownloading) {
     setDownloading(false);
   });
 }
+export const showDistance = (distance) => {
+  let settings = store.getState().settingsData?.settings?.general_settings;
+  const distanceUnit = settings?.distance_unit; // Ensure it's a valid ISO currency code
+  if (!distance || distance === "null") return distance; // Handle empty or "null" cases
+  return `${parseAndCeil(distance)} ${distanceUnit}`;
+};
 
 export const showPrice = (price) => {
-  let settings = store.getState().settingsData?.settings?.app_settings;
-  const currencyCode = settings?.currency;
+  if (!price || price === "null") return price; // Handle empty or "null" cases
 
-  return currencyCode + price;
+  let settings = store.getState().settingsData?.settings?.app_settings;
+  const currencyCode = settings?.country_currency_code || "USD"; // Fallback to USD if invalid
+  const currencySymbol = settings?.currency || "$"; // Fallback symbol
+  const decimalPoints = settings?.decimal_points;
+
+  // Ensure decimalPoints is a valid number
+  let decimalDigits = parseInt(decimalPoints, 10);
+  if (isNaN(decimalDigits) || decimalDigits < 0 || decimalDigits > 20) {
+    decimalDigits = 2; // Default to 2 decimal places if invalid
+  }
+
+  // Convert price to number after removing commas
+  const numericPrice = parseFloat(price.toString().replace(/,/g, ""));
+  if (isNaN(numericPrice)) return `${currencySymbol}0.00`; // Handle invalid price
+
+  try {
+    // Validate currency code against a known list (optional)
+    if (!/^[A-Z]{3}$/.test(currencyCode)) {
+      throw new Error("Invalid currency code format");
+    }
+
+    // Format using Intl.NumberFormat
+    return new Intl.NumberFormat(navigator.language, {
+      style: "currency",
+      currency: currencyCode, // Ensures correct formatting
+      currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: decimalDigits,
+      maximumFractionDigits: decimalDigits,
+    }).format(numericPrice);
+  } catch (error) {
+    console.error("Invalid currency code or format:", currencyCode, error);
+    return `${currencySymbol}${numericPrice.toFixed(decimalDigits)}`; // Fallback formatting
+  }
 };
 
 //  Cache for translations
@@ -331,11 +367,13 @@ export const setLanguage = (langObject) => async (dispatch) => {
       `Failed to load translations for language: ${langCode}`,
       error
     );
-    if (langCode !== "en") {
-      console.warn(`Falling back to default language: en`);
-      dispatch(
-        setLanguage({ language: "English", langCode: "en", isRtl: false })
+    // Fallback to default language from config
+    const fallbackLanguage = config.defaultLanguage;
+    if (langCode !== fallbackLanguage.langCode) {
+      console.warn(
+        `Falling back to default language: ${fallbackLanguage.langCode}`
       );
+      dispatch(setLanguage(fallbackLanguage));
     }
   }
 };
@@ -360,10 +398,8 @@ export const useRTL = () => {
   return currentLanguage?.isRtl;
 };
 
-
 // Error handling function
 export const handleFirebaseAuthError = (t, errorCode) => {
-  
   const ERROR_CODES = {
     "auth/user-not-found": t("userNotFound"),
     "auth/wrong-password": t("invalidPassword"),
@@ -391,9 +427,7 @@ export const handleFirebaseAuthError = (t, errorCode) => {
       "dependentSdkInitializedBeforeAuth"
     ),
     "auth/dynamic-link-not-activated": t("dynamicLinkNotActivated"),
-    "auth/email-change-needs-verification": t(
-      "emailChangeNeedsVerification"
-    ),
+    "auth/email-change-needs-verification": t("emailChangeNeedsVerification"),
     "auth/emulator-config-failed": t("emulatorConfigFailed"),
     "auth/expired-action-code": t("expiredActionCode"),
     "auth/cancelled-popup-request": t("cancelledPopupRequest"),
@@ -405,9 +439,7 @@ export const handleFirebaseAuthError = (t, errorCode) => {
     "auth/invalid-cert-hash": t("invalidCertHash"),
     "auth/invalid-verification-code": t("invalidVerificationCode"),
     "auth/invalid-continue-uri": t("invalidContinueUri"),
-    "auth/invalid-cordova-configuration": t(
-      "invalidCordovaConfiguration"
-    ),
+    "auth/invalid-cordova-configuration": t("invalidCordovaConfiguration"),
     "auth/invalid-custom-token": t("invalidCustomToken"),
     "auth/invalid-dynamic-link-domain": t("invalidDynamicLinkDomain"),
     "auth/invalid-emulator-scheme": t("invalidEmulatorScheme"),
@@ -482,10 +514,9 @@ export const handleFirebaseAuthError = (t, errorCode) => {
     "auth/weak-password": t("weakPassword"),
     "auth/web-storage-unsupported": t("webStorageUnsupported"),
   };
-  
+
   // Check if the error code exists in the global ERROR_CODES object
   if (ERROR_CODES.hasOwnProperty(errorCode)) {
-
     // If the error code exists, log the corresponding error message
     toast.error(ERROR_CODES[errorCode]);
   } else {
@@ -496,10 +527,123 @@ export const handleFirebaseAuthError = (t, errorCode) => {
   // For example, display an error message to the user, redirect to an error page, etc.
 };
 
-
-// is demo mode 
+// is demo mode
 export const isDemoMode = () => {
- const systemSettings = store.getState().settingsData.settings?.general_settings;
- const isDemo = systemSettings?.demo_mode === "1";
- return isDemo;
-}
+  const systemSettings =
+    store.getState().settingsData.settings?.general_settings;
+  const isDemo = systemSettings?.demo_mode === "1";
+  return isDemo;
+};
+
+export const parseAndCeil = (distance) => {
+  return Math.ceil(parseFloat(distance));
+};
+
+export const darkThemeStyles = [
+  {
+    elementType: "geometry",
+    stylers: [{ color: "#212121" }],
+  },
+  {
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#212121" }],
+  },
+  {
+    featureType: "administrative",
+    elementType: "geometry",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "administrative.country",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9e9e9e" }],
+  },
+  {
+    featureType: "administrative.land_parcel",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#bdbdbd" }],
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#181818" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#1b1b1b" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#2c2c2c" }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#8a8a8a" }],
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry",
+    stylers: [{ color: "#373737" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#3c3c3c" }],
+  },
+  {
+    featureType: "road.highway.controlled_access",
+    elementType: "geometry",
+    stylers: [{ color: "#4e4e4e" }],
+  },
+  {
+    featureType: "road.local",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
+  },
+  {
+    featureType: "transit",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#000000" }],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#3d3d3d" }],
+  },
+];
+
+
+export const isMobile = () => {
+  return window.innerWidth <= 768;
+};
+

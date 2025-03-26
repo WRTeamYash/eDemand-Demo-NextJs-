@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "swiper/css";
-import { Autoplay, FreeMode, Navigation } from "swiper/modules";
+import { Autoplay, FreeMode, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { addCategory } from "../../redux/reducers/multiCategoriesSlice";
 import BlurredServiceCard from "../Cards/BlurredServiceCard";
@@ -17,6 +17,7 @@ import NearbyProviderCardSkeleton from "../Skeletons/NearbyProviderCardSkeleton"
 import NoDataFound from "../ReUseableComponents/Error/NoDataFound";
 import { useTranslation } from "../Layout/TranslationContext";
 import { useRTL } from "@/utils/Helper";
+import Link from "next/link";
 
 const CategoryDetails = () => {
   const router = useRouter();
@@ -24,15 +25,22 @@ const CategoryDetails = () => {
   const dispatch = useDispatch();
   const t = useTranslation();
   const isRTL = useRTL();
+  const { catslug } = router.query;
 
   // Get slug dynamically
   const slug = router.query.slug;
+
   const lastSlug = Array.isArray(slug) ? slug[slug.length - 1] : slug;
 
   // Access selected category from Redux store
   const selectedCategories = useSelector(
     (state) => state.multiCategories.selectedCategories
   );
+  // Find the current category by slug
+  const currentCategory = selectedCategories.find((cat) => cat.id === lastSlug);
+
+  const currentCategoryName = currentCategory ? currentCategory.name : lastSlug;
+
   const locationData = useSelector((state) => state?.location);
   const [loading, setLoading] = useState(false);
   const [subCategories, setSubCategories] = useState([]);
@@ -74,7 +82,7 @@ const CategoryDetails = () => {
       const response = await getSubCategory({
         latitude: locationData?.lat,
         longitude: locationData?.lng,
-        category_id: lastSlug,
+        slug: lastSlug,
       });
       if (response?.error === false) {
         setSubCategories(response?.data);
@@ -94,7 +102,7 @@ const CategoryDetails = () => {
       const response = await getProviders({
         latitude: locationData?.lat,
         longitude: locationData?.lng,
-        category_id: lastSlug,
+        category_slug: lastSlug,
       });
       if (response?.error === false) {
         setProviders(response?.data);
@@ -107,17 +115,70 @@ const CategoryDetails = () => {
       console.log(error);
     }
   };
+
   useEffect(() => {
-    if (lastSlug) {
-      fetchSubCategory();
-      fetchProviders();
+    if (router.isReady) {
+      if (lastSlug) {
+        fetchSubCategory();
+        fetchProviders();
+      }
     }
-  }, [lastSlug]);
+  }, [lastSlug, router.isReady]);
+
+  
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    // Get current path segments
+    const currentPathSlugs = router.asPath
+      .split('/')
+      .filter(Boolean)
+      .filter(segment => segment !== 'services');
+
+    // Clear all existing categories first
+    dispatch({ type: 'multiCategories/clearCategories' });
+    
+    // Find categories that match the current path and add them in order
+    currentPathSlugs.forEach((slug, index) => {
+      const existingCategory = selectedCategories.find(cat => cat.slug === slug);
+      if (existingCategory) {
+        dispatch(addCategory(existingCategory));
+      } else {
+        // If we don't have this category in our store yet, we might need to fetch it
+        // This is optional and depends on your requirements
+        fetchCategoryBySlug(slug);
+      }
+    });
+  }, [router.asPath, router.isReady]);
+
+  // Add this helper function to fetch category data by slug if needed
+  const fetchCategoryBySlug = async (slug) => {
+    try {
+      const response = await getSubCategory({
+        latitude: locationData?.lat,
+        longitude: locationData?.lng,
+        slug: slug,
+      });
+      
+      if (response?.error === false && response.data) {
+        const categoryData = response.data.find(cat => cat.slug === slug);
+        if (categoryData) {
+          dispatch(addCategory({
+            id: categoryData.id,
+            name: categoryData.name,
+            slug: categoryData.slug,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching category data:', error);
+    }
+  };
 
   const handleRouteCategory = (category) => {
     // Check if the category is already in selectedCategories
     const isCategorySelected = selectedCategories.some(
-      (cat) => cat?.id === category?.id
+      (cat) => cat?.slug === category?.slug
     );
 
     // If the category is not already selected, dispatch the action and route to it
@@ -126,7 +187,7 @@ const CategoryDetails = () => {
       dispatch(addCategory(category));
 
       // Navigate to the category details page
-      router.push(`${pathname}/${category?.id}`);
+      router.push(`${pathname}/${category?.slug}`);
     }
   };
   return (
@@ -140,7 +201,7 @@ const CategoryDetails = () => {
                 <div className="commanSec mt-12 flex flex-col items-start justify-center gap-6 w-full">
                   <div className="Headlines flex flex-col w-full">
                     <span className="text-2xl font-semibold">
-                      {t("categoriesIn")} {lastSlug}
+                      {t("categoriesIn")} {currentCategoryName}
                     </span>
                     <span className="description_color">
                       {subCatTotal} {t("subCategories")}
@@ -149,8 +210,9 @@ const CategoryDetails = () => {
                 </div>
                 <div className="sub-cate-swiper my-6">
                   <Swiper
-                  key={isRTL}
-                    modules={[Autoplay, FreeMode, Navigation]} // Include FreeMode module
+                    key={isRTL}
+                    modules={[Autoplay, FreeMode, Navigation, Pagination]} // Include FreeMode module
+                    pagination={{ clickable: true }}
                     spaceBetween={30}
                     loop={false}
                     autoplay={{ delay: 3000 }} // Autoplay functionality
@@ -161,20 +223,20 @@ const CategoryDetails = () => {
                   >
                     {loading
                       ? // Render skeleton cards if loading
-                        Array.from({ length: 5 }).map((_, index) => (
-                          <SwiperSlide key={`skeleton-${index}`}>
-                            <BlurredServiceCardSkeleton />
-                          </SwiperSlide>
-                        ))
+                      Array.from({ length: 5 }).map((_, index) => (
+                        <SwiperSlide key={`skeleton-${index}`}>
+                          <BlurredServiceCardSkeleton />
+                        </SwiperSlide>
+                      ))
                       : // Render actual cards if not loading
-                        subCategories?.map((service) => (
-                          <SwiperSlide key={service.id}>
-                            <BlurredServiceCard
-                              elem={service}
-                              handleRouteChange={handleRouteCategory}
-                            />
-                          </SwiperSlide>
-                        ))}
+                      subCategories?.map((service) => (
+                        <SwiperSlide key={service.id}>
+                          <BlurredServiceCard
+                            elem={service}
+                            handleRouteChange={handleRouteCategory}
+                          />
+                        </SwiperSlide>
+                      ))}
                   </Swiper>
                 </div>
               </>
@@ -182,13 +244,13 @@ const CategoryDetails = () => {
           </div>
         </div>
         <div className="providerSec">
-          {loading || (providers && providers.length > 0) ? (
+          {loading || (providers && providers?.length > 0) ? (
             <>
               <div className="commanSec mt-12 flex flex-col items-start justify-center gap-6 w-full container mx-auto">
                 <div className="Headlines flex flex-col w-full">
                   <span className="text-2xl font-semibold">
                     {" "}
-                    {t("providersIn")} {lastSlug}
+                    {t("providersIn")} {currentCategoryName}
                   </span>
                   <span className="description_color">
                     {providerstTotal} {t("providers")}
@@ -200,23 +262,28 @@ const CategoryDetails = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {loading
                       ? // Render skeleton cards if loading
-                        Array.from({ length: 6 }).map((_, index) => (
-                          <SwiperSlide key={`skeleton-${index}`}>
-                            <NearbyProviderCardSkeleton />
-                          </SwiperSlide>
-                        ))
+                      Array.from({ length: 6 }).map((_, index) => (
+                        <SwiperSlide key={`skeleton-${index}`}>
+                          <NearbyProviderCardSkeleton />
+                        </SwiperSlide>
+                      ))
                       : providers.map((provider, index) => (
-                          <div key={index}>
+                        <div key={index}>
+                          <Link
+                            href={`/provider-details/${provider?.slug}`}
+                            title={provider?.name}
+                          >
                             <NearbyProviderCard provider={provider} />
-                          </div>
-                        ))}
+                          </Link>
+                        </div>
+                      ))}
                   </div>
                 </div>
               </div>
-              {providers.length > 6 && (
+              {providers?.length > 6 && (
                 <div className="loadmore my-6 flex items-center justify-center">
                   <button className="light_bg_color primary_text_color py-3 px-8 rounded-xl">
-                   {t("loadMore")}{" "}
+                    {t("loadMore")}{" "}
                   </button>
                 </div>
               )}
@@ -227,7 +294,12 @@ const CategoryDetails = () => {
         {/* No Data Found */}
         {!loading && !subCategories?.length && !providers?.length && (
           <div className="no-data-found my-12 flex flex-col items-center justify-center">
-           <NoDataFound title={"No Data Found"} desc={"Unfortunately, we couldn't find any providers or categories."}/>
+            <NoDataFound
+              title={t("noDataFound")}
+              desc={
+                t("noDataFoundText")
+              }
+            />
           </div>
         )}
       </section>

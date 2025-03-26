@@ -1,7 +1,6 @@
 "use client";
 import {
   isLogin,
-  placeholderImage,
   showPrice,
   statusColors,
   statusNames,
@@ -35,7 +34,7 @@ const GeneralBookingCard = ({ data }) => {
   const settings = store.getState().settingsData?.settings;
 
   const isPostBookingChatAvailable =
-    settings?.general_settings.allow_post_booking_chat === "1";
+    settings?.general_settings?.allow_post_booking_chat === "1";
 
   const isProviderPostBookingChatAvailable =
   data?.post_booking_chat === "1";
@@ -89,7 +88,7 @@ const GeneralBookingCard = ({ data }) => {
           })
         );
 
-        toast.success(t("itemsAddedToCart"));
+        toast.success(t("serviceAddedToCart"));
         router.push("/checkout");
       } else {
         toast.error(response?.message || t("failedToReorder"));
@@ -102,15 +101,11 @@ const GeneralBookingCard = ({ data }) => {
   return (
     <div className="border rounded-lg p-4 flex flex-col justify-between gap-4 card_bg">
       {/* Top Section */}
-      <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-        <div className="flex items-center gap-4 w-full md:w-auto">
+      <div className="flex flex-wra md:flex-nowrap items-center justify-between gap-4 w-full">
+        <div className="flex items-center gap-4 w-3/4">
           {/* Image */}
-          <div className="w-16 h-16 rounded-md overflow-hidden">
+          <div className="w-16 h-16 rounded-md overflow-hidden  min-w-16">
             <CustomImageTag
-              width={0}
-              height={0}
-              loading="lazy"
-              onError={placeholderImage}
               src={services[0]?.image}
               alt={services[0]?.service_title}
               className="w-full h-full object-cover"
@@ -118,7 +113,7 @@ const GeneralBookingCard = ({ data }) => {
           </div>
           {/* Service Details */}
           <div>
-            <h2 className="font-semibold text-lg">
+            <h2 className="font-semibold text-lg line-clamp-1">
               {services[0]?.service_title}
             </h2>
             <p className="description_color">
@@ -127,10 +122,10 @@ const GeneralBookingCard = ({ data }) => {
           </div>
         </div>
         {/* Status */}
-        <div className="flex flex-col items-start md:items-end justify-center w-full md:w-auto">
+        <div className="flex flex-col items-start md:items-end justify-center w-1/4">
           <span className="text-sm description_color">{t("status")}</span>
-          <span className="status capitalize" style={{ color: statusColor }}>
-            {statusName}
+          <span className="status capitalize text-sm sm:text-base" style={{ color: statusColor }}>
+             {t(statusName)}
           </span>
         </div>
       </div>
@@ -144,7 +139,7 @@ const GeneralBookingCard = ({ data }) => {
         )}
         <div
           className={`flex flex-col gap-2 ${
-            services.length === 1 ? "mt-10" : ""
+            services.length === 1 ? "mt-5 md:mt-10" : ""
           }`}
         >
           <span className="description_color">{t("schedule")}</span>
@@ -171,7 +166,7 @@ const GeneralBookingCard = ({ data }) => {
             <span className="description_color">{t("by")}</span>{" "}
             <span className="font-semibold">{data?.company_name}</span>
           </p>
-          {!isCompleted && (
+          {data?.is_otp_enalble === "1" && !isCompleted && (
             <p className="text-sm w-full md:w-auto">
               <span className="description_color">{t("otp")}</span>{" "}
               <span className="font-semibold">{data?.otp}</span>
@@ -183,8 +178,8 @@ const GeneralBookingCard = ({ data }) => {
       <div className="flex items-center gap-3">
         {isCompleted ? (
           <>
-            <Link href={`/booking/${data?.id}`} className="w-full">
-              <button className="p-3 border border_color rounded-lg bg-transparent primary_text_color w-full">
+            <Link href={`/booking/${data?.slug}`} className="w-full">
+              <button className="p-3 border border_color rounded-lg bg-transparent primary_text_color max-[350px]:w-max w-full">
                 {t("viewBooking")}
               </button>
             </Link>
@@ -207,7 +202,7 @@ const GeneralBookingCard = ({ data }) => {
                 <BsChatSquareDotsFill size={22} />
               </button>
             )}
-            <Link href={`/booking/${data?.id}`} className="w-full">
+            <Link href={`/booking/${data?.slug}`} className="w-full">
               <button className="p-3 border border_color rounded-lg bg-transparent primary_text_color w-full">
                 {t("viewBooking")}
               </button>

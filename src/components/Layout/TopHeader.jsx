@@ -57,7 +57,7 @@ const TopHeader = () => {
   };
 
   return (
-    <div className="primary_bg_color text-white py-2 px-2 md:px-4">
+    <div className="hidden lg:block primary_bg_color text-white py-2 px-2 md:px-4">
       <div className="container mx-auto">
         <div className="flex gap-4 md:gap-1 justify-between w-full items-center md:space-y-0">
           <div className="hidden md:flex items-center justify-center gap-2">

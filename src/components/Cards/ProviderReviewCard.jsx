@@ -1,22 +1,16 @@
-"use client"
+"use client";
 import React from "react";
 import quote from "../../assets/quote2.svg";
-import Image from "next/image";
 import { CiStar } from "react-icons/ci";
-import { placeholderImage } from "@/utils/Helper";
 import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 
 const ProviderReviewCard = ({ review }) => {
-  
   return (
     <div className="card_bg p-6 rounded-[30px] mx-auto h-[333px] flex flex-col items-start justify-center gap-[24px]">
       {/* Quote Icon */}
       <div className="quote">
-      <CustomImageTag
+        <CustomImageTag
           src={quote}
-          width={0}
-          height={0}
-          onError={placeholderImage}
           className="w-[48px] h-[48px]  opacity-20"
           alt="quote"
         />
@@ -30,11 +24,10 @@ const ProviderReviewCard = ({ review }) => {
       {/* Reviewer Info */}
       <div className="flex flex-col sm:flex-row  items-start justify-center gap-4 sm:items-center sm:justify-between sm:gap-0 w-full">
         <div className="flex items-center">
-        <CustomImageTag
+          <CustomImageTag
             src={review?.profile_image}
             alt={review?.username}
             className="w-12 h-12 rounded-full mr-4"
-            width={0} height={0} loading="lazy" onError={placeholderImage}
           />
           <div className="flex flex-col items-start">
             <p className="text-base font-normal">{review?.username}</p>

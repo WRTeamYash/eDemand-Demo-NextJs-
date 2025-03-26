@@ -24,6 +24,7 @@ import { useTranslation } from "@/components/Layout/TranslationContext";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { clearChatData } from "@/redux/reducers/helperSlice";
+import { BsTools } from "react-icons/bs";
 
 const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
   const t = useTranslation();
@@ -91,21 +92,21 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
         <DropdownMenuSeparator />
 
         <Link href="/general-bookings" title={t("generalBookings")}>
-          <DropdownMenuItem className="flex items-center justify-start gap-4">
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
               <FaRegCalendarCheck size={24} />
             </span>
             <span className="text-lg font-normal">{t("bookings")}</span>
           </DropdownMenuItem>
         </Link>
-        <DropdownMenuItem className="flex items-center justify-start gap-4" onClick={GoChats}>
+        <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer" onClick={GoChats}>
           <span className="primary_text_color">
             <IoChatboxEllipsesOutline size={24} />
           </span>
           <span className="text-lg font-normal">{t("chats")}</span>
         </DropdownMenuItem>
         <Link href="/notifications" title={t("notifications")}>
-          <DropdownMenuItem className="flex items-center justify-start gap-4">
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
               <MdNotificationsNone size={24} />
             </span>
@@ -113,15 +114,23 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
           </DropdownMenuItem>
         </Link>
         <Link href="/bookmarks" title={t("bookmarks")}>
-          <DropdownMenuItem className="flex items-center justify-start gap-4">
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
               <CiBookmarkCheck size={24} />
             </span>
             <span className="text-lg font-normal">{t("bookmarks")}</span>
           </DropdownMenuItem>
         </Link>
+        <Link href="/my-services-requests" title={t("myServiceRequests")}>
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
+            <span className="primary_text_color">
+              <BsTools size={24} />
+            </span>
+            <span className="text-lg font-normal">{t("myServiceRequests")}</span>
+          </DropdownMenuItem>
+        </Link>
         <Link href="/addresses" title={t("addresses")}>
-          <DropdownMenuItem className="flex items-center justify-start gap-4">
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
               <IoLocationOutline size={24} />
             </span>
@@ -129,7 +138,7 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
           </DropdownMenuItem>
         </Link>
         <Link href="/payment-history" title={t("paymentHistory")}>
-          <DropdownMenuItem className="flex items-center justify-start gap-4">
+          <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
               <IoCardOutline size={24} />
             </span>

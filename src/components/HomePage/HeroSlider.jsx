@@ -136,17 +136,17 @@ const HeroSlider = ({ sliderData }) => {
         break;
 
       case "provider":
-        // For "provider", open the provider route in a new tab
-        const providerRoute = `/provider-details/${slide?.type_id}`;
+        // For "provider", open the provider route
+        const providerRoute = `/provider-details/${slide?.provider_slug}`;
         router.push(providerRoute);
         break;
 
       case "Category":
-        const cateID =
+        const cateID = 
           slide?.category_parent_id === "0"
-            ? slide?.type_id
-            : slide?.category_parent_id;
-        // For "category", open the category route in a new tab
+            ? slide?.category_slug
+            : slide?.parent_category_slug;
+        // For "category", open the category route
         const categoryRoute = `/services/${cateID}`;
         router.push(categoryRoute);
         break;

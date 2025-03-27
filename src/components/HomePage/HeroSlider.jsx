@@ -205,7 +205,11 @@ const HeroSlider = ({ sliderData }) => {
   const isSliderData = sliderData && sliderData?.length > 0
   return (
     <div className={`relative  ${isSliderData ? "pb-16" : ""} heroSliderSection commonMT`}>
-      <div className={`relative w-full  group ${isSliderData ? "h-[200px] sm:h-[450px] md:h-[600px] xl:h-[700px]" : "h-full my-10"}`}>
+       <div className={`relative w-full group ${
+        isSliderData 
+          ? "h-[192px] sm:h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px] 2xl:h-[900px]" 
+          : "h-full my-10"
+      }`}>
         {isSliderData ? (
           <>
             <Swiper

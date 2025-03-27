@@ -84,7 +84,7 @@ const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL, isPause
 
   return (
     <div className="absolute bottom-24 md:bottom-24 left-1/2 transform -translate-x-1/2 flex z-10 bg-white dark:bg-[#212121] p-2 rounded-full">
-     {Array.from({ length: totalSlides }).map((_, index) => (
+      {Array.from({ length: totalSlides }).map((_, index) => (
         <button
           key={index}
           onClick={() => goToSlide(index)}
@@ -149,7 +149,7 @@ const HeroSlider = ({ sliderData }) => {
         break;
 
       case "Category":
-        const cateID = 
+        const cateID =
           slide?.category_parent_id === "0"
             ? slide?.category_slug
             : slide?.parent_category_slug;
@@ -176,7 +176,7 @@ const HeroSlider = ({ sliderData }) => {
     // Navigate to the search page
     router.push(`/search/${slug}`);
   };
-  
+
   useEffect(() => {
     const swiperInstance = swiperRef.current;
 
@@ -205,11 +205,10 @@ const HeroSlider = ({ sliderData }) => {
   const isSliderData = sliderData && sliderData?.length > 0
   return (
     <div className={`relative ${isSliderData ? "pb-16" : ""} heroSliderSection commonMT`}>
-      <div className={`relative w-full group ${
-        isSliderData 
-          ? "h-[192px] sm:h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px] 2xl:h-[900px]" 
-          : "h-full my-10"
-      }`}>
+      <div className={`relative w-full group ${isSliderData
+        ? "h-[192px] sm:h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px] 2xl:h-[700px] [@media(min-width:1920px)]:h-[700px] [@media(min-width:2560px)]:h-[900px]"
+        : "h-full my-10"
+        }`}>
         {isSliderData ? (
           <>
             <Swiper

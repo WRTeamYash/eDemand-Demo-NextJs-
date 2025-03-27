@@ -204,8 +204,8 @@ const HeroSlider = ({ sliderData }) => {
   }, []);
   const isSliderData = sliderData && sliderData?.length > 0
   return (
-    <div className={`relative  ${isSliderData ? "pb-16" : ""} heroSliderSection commonMT`}>
-       <div className={`relative w-full group ${
+    <div className={`relative ${isSliderData ? "pb-16" : ""} heroSliderSection commonMT`}>
+      <div className={`relative w-full group ${
         isSliderData 
           ? "h-[192px] sm:h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px] 2xl:h-[900px]" 
           : "h-full my-10"
@@ -231,7 +231,7 @@ const HeroSlider = ({ sliderData }) => {
                 waitForTransition: true,
               }}
               pagination={{ clickable: true }}
-              className="h-[176px] sm:h-[500px] md:h-[600px] xl:h-[700px]"
+              className="h-full w-full"
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
                 swiper.autoplay.start();
@@ -245,7 +245,7 @@ const HeroSlider = ({ sliderData }) => {
                   <CustomImageTag
                     alt="slider_image"
                     src={slide?.slider_web_image}
-                    className="w-full h-[160px] sm:h-[500px] md:h-full object-contain cursor-pointer"
+                    className="w-full h-full object-fill"
                   />
                 </SwiperSlide>
               ))}

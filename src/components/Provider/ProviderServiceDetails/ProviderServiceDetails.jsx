@@ -395,8 +395,8 @@ const ProviderServiceDetails = () => {
                   <>
                     <span className="flex items-center gap-1">
                       <FaUserFriends className="mr-1 primary_text_color" />
-                      <span className="ml-1 text-sm">
-                        {serviceData?.number_of_members_required} <span className="hidden lg:block"> {t("persons")}</span>
+                      <span className="ml-1 text-sm flex items-center gap-1">
+                        <span> {serviceData?.number_of_members_required}</span> <span className="hidden lg:block"> {t("persons")}</span>
                       </span>
                     </span>
                     <span className="border border-gray-500 h-3"></span>
@@ -405,8 +405,8 @@ const ProviderServiceDetails = () => {
                 {serviceData?.duration && (
                   <span className="flex items-center gap-1 pl-2">
                     <FaClock className="mr-1 primary_text_color" />
-                    <span className="ml-1 text-sm">
-                      {serviceData?.duration} <span className="hidden lg:block"> {t("minutes")}</span>
+                    <span className="ml-1 text-sm flex items-center gap-1">
+                      <span> {serviceData?.duration}</span> <span className="hidden lg:block"> {t("minutes")}</span>
                     </span>
                   </span>
                 )}

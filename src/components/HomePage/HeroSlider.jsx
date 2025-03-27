@@ -34,7 +34,7 @@ const CustomNavigation = ({ onPrev, onNext }) => (
   </>
 );
 
-const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL }) => {
+const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL, isPaused }) => {
   const [progress, setProgress] = useState(0);
   const [opacity, setOpacity] = useState(0);
   const animationRef = useRef(null);
@@ -51,6 +51,10 @@ const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL }) => {
       let currentStep = 0;
 
       const interval = setInterval(() => {
+        if (isPaused) {
+          return;
+        }
+
         if (currentStep < totalSteps) {
           const newProgress = (currentStep / totalSteps) * 100;
           const newOpacity = newProgress / 100;
@@ -72,13 +76,15 @@ const CustomPagination = ({ totalSlides, currentSlide, goToSlide, isRTL }) => {
     animationRef.current = animateProgress();
 
     return () => {
-      clearInterval(animationRef.current);
+      if (animationRef.current) {
+        clearInterval(animationRef.current);
+      }
     };
-  }, [currentSlide]);
+  }, [currentSlide, isPaused]);
 
   return (
-    <div className="absolute bottom-24 md:bottom-24 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 bg-white dark:bg-[#212121] p-2 rounded-full">
-      {Array.from({ length: totalSlides }).map((_, index) => (
+    <div className="absolute bottom-24 md:bottom-24 left-1/2 transform -translate-x-1/2 flex z-10 bg-white dark:bg-[#212121] p-2 rounded-full">
+     {Array.from({ length: totalSlides }).map((_, index) => (
         <button
           key={index}
           onClick={() => goToSlide(index)}
@@ -113,6 +119,7 @@ const HeroSlider = ({ sliderData }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
   const handleClose = () => setIsModalOpen(false);
 
   const handleSlideChange = (swiper) => {
@@ -169,24 +176,25 @@ const HeroSlider = ({ sliderData }) => {
     // Navigate to the search page
     router.push(`/search/${slug}`);
   };
+  
   useEffect(() => {
     const swiperInstance = swiperRef.current;
 
     const stopAutoplay = () => {
-      swiperInstance?.autoplay?.stop(); // Safely stop autoplay on hover
+      swiperInstance?.autoplay?.stop();
+      setIsPaused(true);
     };
 
     const startAutoplay = () => {
-      swiperInstance?.autoplay?.start(); // Safely restart autoplay
+      swiperInstance?.autoplay?.start();
+      setIsPaused(false);
     };
 
     if (swiperInstance && swiperInstance.el) {
-      // Attach hover events to handle autoplay
       swiperInstance.el.addEventListener("mouseenter", stopAutoplay);
       swiperInstance.el.addEventListener("mouseleave", startAutoplay);
 
       return () => {
-        // Cleanup the event listeners when component unmounts
         if (swiperInstance.el) {
           swiperInstance.el.removeEventListener("mouseenter", stopAutoplay);
           swiperInstance.el.removeEventListener("mouseleave", startAutoplay);
@@ -212,12 +220,17 @@ const HeroSlider = ({ sliderData }) => {
                 prevEl: ".swiper-button-prev",
                 nextEl: ".swiper-button-next",
               }}
-              // autoplay={false} // Prevents autoplay pause on hover
-              autoplay={{ delay: 3000, pauseOnMouseEnter: false }} // Prevents autoplay pause on hover
+              autoplay={{
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: false,
+                waitForTransition: true,
+              }}
               pagination={{ clickable: true }}
               className="h-[176px] sm:h-[500px] md:h-[600px] xl:h-[700px]"
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
+                swiper.autoplay.start();
               }}
             >
               {sliderData.map((slide, index) => (
@@ -252,6 +265,7 @@ const HeroSlider = ({ sliderData }) => {
                     currentSlide={currentSlide}
                     goToSlide={(index) => swiperRef.current?.slideTo(index)}
                     isRTL={isRTL}
+                    isPaused={isPaused}
                   />
                 </div>
               </>

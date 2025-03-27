@@ -24,7 +24,7 @@ import { useTranslation } from "@/components/Layout/TranslationContext";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { clearChatData } from "@/redux/reducers/helperSlice";
-import { BsTools } from "react-icons/bs";
+import { VscTools } from "react-icons/vsc";
 
 const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
   const t = useTranslation();
@@ -124,7 +124,7 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
         <Link href="/my-services-requests" title={t("myServiceRequests")}>
           <DropdownMenuItem className="flex items-center justify-start gap-4 cursor-pointer">
             <span className="primary_text_color">
-              <BsTools size={24} />
+              <VscTools size={24} />
             </span>
             <span className="text-lg font-normal">{t("myServiceRequests")}</span>
           </DropdownMenuItem>

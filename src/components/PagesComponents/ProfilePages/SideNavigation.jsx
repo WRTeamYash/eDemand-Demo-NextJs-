@@ -12,7 +12,8 @@ import { isDemoMode, placeholderImage, useRTL } from "@/utils/Helper";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { BsBookmarkCheck, BsTools } from "react-icons/bs";
+import { BsBookmarkCheck } from "react-icons/bs";
+import { VscTools } from "react-icons/vsc";
 import { FaRegCalendarCheck } from "react-icons/fa";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import {
@@ -54,7 +55,7 @@ const SideNavigation = () => {
     },
     {
       title: t("myServiceRequests"),
-      icon: <BsTools size={18} />,
+      icon: <VscTools size={18} />,
       route: ["/my-services-requests"],
       category: "",
     },

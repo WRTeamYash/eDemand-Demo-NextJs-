@@ -15,6 +15,7 @@ import { useTranslation } from "../Layout/TranslationContext";
 
 const ProviderServiceTab = ({
   slug,
+  provider,
   isloadMore,
   loading,
   serviceData,
@@ -79,6 +80,7 @@ const ProviderServiceTab = ({
               <div className="grid grid-cols-1 gap-2" key={index}>
                 <ProviderDetailsServiceCard
                   slug={slug}
+                  provider={provider}
                   data={ele}
                   compnayName={compnayName}
                 />

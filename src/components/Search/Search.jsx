@@ -313,7 +313,9 @@ const Search = () => {
                                   (service, index) => (
                                     <SwiperSlide key={index}>
                                       <ProviderDetailsServiceCard
+                                        slug={service?.provider_slug}
                                         data={service}
+                                        compnayName={service?.provider?.company_name}
                                       />
                                     </SwiperSlide>
                                   )
@@ -326,6 +328,7 @@ const Search = () => {
                                 (service, index) => (
                                   <div key={index}>
                                     <ProviderDetailsServiceCard
+                                      slug={service?.provider_slug}
                                       data={service}
                                     />
                                   </div>

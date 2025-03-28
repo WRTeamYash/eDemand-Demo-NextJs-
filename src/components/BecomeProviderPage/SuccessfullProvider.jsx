@@ -4,7 +4,7 @@ import StepCard from "./StepCard";
 import linesbg1 from "@/assets/lines1.svg";
 import linesbg2 from "@/assets/lines2.svg";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Scrollbar } from "swiper/modules"; // Import Scrollbar
+import { Autoplay, Scrollbar } from "swiper/modules"; // Import Scrollbar
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar"; // Import Swiper scrollbar CSS
@@ -53,15 +53,20 @@ const SuccessfullProvider = ({ data }) => {
         />
 
         <div className="relative bg-[#0277FA0A] overflow-hidden rounded-[30px] py-10 px-4 md:px-8 md:py-20 lg:px-16">
-          <CustomImageTag
+          <img
             loading="lazy"
             src={linesbg1.src}
             alt="linesbg1.src"
             className="absolute top-0 right-0 -z-10 w-auto h-auto bg-no-repeat"
           />
           {/* Steps Section */}
-          <div className="flex justify-center">
+          <div className="becomeProviderSteps flex justify-center">
             <Swiper
+              autoplay={{
+                delay: 2500,
+                disableOnInteraction: false,
+              }}
+              loop={true}
               spaceBetween={20}
               slidesPerView={2}
               key={isRTL}
@@ -70,7 +75,7 @@ const SuccessfullProvider = ({ data }) => {
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
               }}
-              modules={[Scrollbar]}
+              modules={[Scrollbar, Autoplay]}
               scrollbar={{
                 hide: false,
                 draggable: true,
@@ -85,7 +90,7 @@ const SuccessfullProvider = ({ data }) => {
               ))}
             </Swiper>
           </div>
-          <CustomImageTag
+          <img
             loading="lazy"
             src={linesbg2.src}
             alt="linesbg2.src"

@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Scrollbar } from "swiper/modules"; // Import Scrollbar
+import { Autoplay, Scrollbar } from "swiper/modules"; // Import Scrollbar
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar"; // Import Swiper scrollbar CSS
@@ -54,7 +54,12 @@ const TopProviders = ({ data }) => {
               swiperRef.current = swiper;
             }}
             key={isRTL}
-            modules={[Scrollbar]}
+            loop={true}
+            modules={[Scrollbar, Autoplay]}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
             scrollbar={{
               hide: false,
               draggable: true,

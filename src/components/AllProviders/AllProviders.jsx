@@ -97,6 +97,7 @@ const AllProviders = () => {
   // useEffect(() => {
   //   fetchCategories();
   // }, []);
+
   // Initial Fetch
   useEffect(() => {
     fetchAllProviders(false, 0);
@@ -120,7 +121,7 @@ const AllProviders = () => {
           {/* Search and Sort */}
           <div className={`filterSec flex items-center justify-between mt-4 gap-y-3 gap-x-4 md:gap-4 w-full relative flex-wrap ${filter ? 'h-28' : 'h-12'} md:h-full transition-all duration-300 overflow-hidden`}>
             {/* Search Input */}
-            <div className="w-[80%] md:w-max flex items-center justify-between gap-2 px-4 py-2 border rounded-md description_color flex-grow">
+            <div className="w-[50%] md:w-max flex items-center justify-between gap-2 px-4 py-2 border rounded-md description_color flex-grow">
               <div className="flex items-center gap-2 w-full">
                 <FaSearch size={18} className="description_color" />
                 <input
@@ -134,7 +135,7 @@ const AllProviders = () => {
               <div>
                 <button
                   onClick={handleSerch}
-                  className="hidden md:block transition-all duration-300 border hover:border_color px-4 py-2 background_color hover:primary_bg_color description_color hover:text-white rounded-lg"
+                  className="absolute top-[9px] right-16 w-max md:w-auto md:relative md:top-0 md:right-0 md:block transition-all duration-300 border hover:border_color text-xs sm:text-base px-2 py-1 md:px-4 md:py-2 background_color hover:primary_bg_color description_color hover:text-white rounded-lg"
                 >
                   {t("search")}
                 </button>

@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import HighlightTag from "../ReUseableComponents/HighlightTag";
 import { FaArrowLeft, FaArrowRight, FaStar } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules"; // Import Scrollbar
+import { Autoplay, Navigation } from "swiper/modules"; // Import Navigation
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar"; // Import Swiper scrollbar CSS
@@ -80,7 +80,12 @@ const ProviderReviews = ({ data }) => {
                 spaceBetween={20} // Space between slides
                 slidesPerView={1}
                 dir={isRTL ? "rtl" : "ltr"}
-                modules={[Navigation]}
+                modules={[Navigation, Autoplay]}
+                autoplay={{
+                  delay: 2500,
+                  disableOnInteraction: false,
+                }}
+                loop={true}
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
                 }}

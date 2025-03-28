@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import SubscriptionCard from "../Cards/SubscriptionCard";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules"; // Import Scrollbar
+import { Autoplay, Navigation } from "swiper/modules"; // Import Navigation
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar"; // Import Swiper scrollbar CSS
@@ -102,7 +102,12 @@ const ProviderSubscription = ({ data }) => {
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
                 }}
-                modules={[Navigation]}
+                modules={[Navigation, Autoplay]}
+                autoplay={{
+                  delay: 2500,
+                  disableOnInteraction: false,
+                }}
+                loop={true}
                 className="custom-swiper"
               >
                 {data?.subscriptions?.map((plan, index) => (

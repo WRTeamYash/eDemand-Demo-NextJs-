@@ -180,7 +180,7 @@ body {
   }
 
   .commonMT{
-    @apply mt-[80px] md:mt-[120px]
+    @apply mt-[80px] md:mt-[90px]
   }
 
 }

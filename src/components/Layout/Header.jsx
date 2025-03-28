@@ -211,7 +211,7 @@ const Header = () => {
         <TopHeader />
 
         {/* Main header */}
-        <div className={`fixed w-full card_bg border-b py-4 px-4 flex justify-between items-center flex-wrap md:flex-nowrap ${showMobileNav ? 'h-64' : 'h-16'} md:h-max transition-all duration-500 overflow-hidden`}>
+        <div className={`fixed border-b w-full card_bg py-4 px-4 flex justify-between items-center flex-wrap md:flex-nowrap ${showMobileNav ? 'h-70' : 'h-16'} md:h-max transition-all duration-500 overflow-hidden`}>
           <div className="container mx-auto flex justify-between items-center">
             <Link href="/" title={t("home")} className="relative">
               <CustomImageTag
@@ -699,6 +699,9 @@ const Header = () => {
             </Link>
             <Link href={'/contact-us'} title={t("contactUs")}>
               {t("contactUs")}
+            </Link>
+            <Link href={'/become-provider'} title={t("becomeProvider")}>
+              {t("becomeProvider")}
             </Link>
             <div>
               <Select

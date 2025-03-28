@@ -52,13 +52,15 @@ const HomeCategories = ({ categoriesData }) => {
   };
 
   return (
-    <div className="categories light_bg_color pt-4 -mt-[6px] sm:mt-[92px] md:mt-0 pb-0 md:py-8 homeCategories">
+    <div className="categories light_bg_color pt-4 mt-[18px] sm:mt-[42px] md:mt-[0] pb-0 md:py-8 homeCategories">
       <div className="container mx-auto px-4 md:px-8">
+        <div className="hidden md:block">
         <CommanHeadline
           headline={t("chooseYourService")}
           subHeadline={t("discoverServices")}
           link={"/services"}
         />
+        </div>
 
         {/* Responsive Grid Layout */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

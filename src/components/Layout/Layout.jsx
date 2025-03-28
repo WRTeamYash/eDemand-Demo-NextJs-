@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import PWAInstallButton from '../ReUseableComponents/PWAInstallButton';
 
 const Footer = dynamic(() => import("./Footer"), { ssr: false });
 const Header = dynamic(() => import("./Header"), { ssr: false });
@@ -163,6 +164,7 @@ const Layout = ({ children }) => {
               <BottomNavigation />
             </>
           )}
+          <PWAInstallButton />
         </>
       )}
     </>

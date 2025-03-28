@@ -13,12 +13,12 @@ const MaintenanceMode = () => {
         {maintanceModeImage}
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 className="text-2xl md:ext-6xl font-bold text-gray-800">
           {t("maintenanceModeTitle")}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base md:text-xl text-gray-600 dark:text-white">
+        <p className="text-base md:text-xl text-gray-600">
           {t("maintenanceModeText")}
         </p>
 

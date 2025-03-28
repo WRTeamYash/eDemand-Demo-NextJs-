@@ -83,7 +83,7 @@ const HomeCategories = ({ categoriesData }) => {
             key={isRTL}
             slidesPerView={3.5} // Set to 3.5
             dir={isRTL ? "rtl" : "ltr"}
-            // autoplay={{ delay: 3000 }} // Autoplay functionality
+            autoplay={{ delay: 3000 }} // Autoplay functionality
             freeMode={true} // Enable free mode
             breakpoints={breakpoints} // Add breakpoints here
             navigation

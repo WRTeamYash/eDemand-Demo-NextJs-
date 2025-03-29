@@ -2,6 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent scrollbar jump */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-y: scroll; /* Always show scrollbar */
+  padding-right: 0 !important; /* Prevent padding adjustment */
+}
+
+body.modal-open {
+  width: 100% !important;
+  overflow-y: scroll !important;
+  position: fixed;
+}
+
+/* Safari-specific header fixes */
+@supports (-webkit-touch-callout: none) {
+  header {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    animation: safari-fix 0.0001s forwards;
+    -webkit-animation: safari-fix 0.0001s forwards;
+  }
+  
+  @keyframes safari-fix {
+    to { transform: translate3d(0,0,0); }
+  }
+  
+  @-webkit-keyframes safari-fix {
+    to { -webkit-transform: translate3d(0,0,0); }
+  }
+  
+  .safari-header {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    border-bottom: 1px solid rgba(33, 33, 33, 0.08) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    z-index: 10 !important;
+  }
+  
+  header > div > div.fixed {
+    position: relative !important;
+    width: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    z-index: 1 !important;
+  }
+  
+  /* Force hardware acceleration for smoother scrolling */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Logo specific fixes for Safari */
+  .safari-logo {
+    width: auto !important;
+    max-height: 60px !important;
+    object-fit: contain !important;
+    aspect-ratio: auto !important;
+    -webkit-transform: translateZ(0);
+  }
+}
+
 /* Light Theme */
 :root {
   --primary-color: #0277fa;
@@ -1076,4 +1153,45 @@ body {
 .dark .bottom_nav_icon_white svg path,
 .dark .bottom_nav_icon_white svg g{
   fill: #ffffff !important;
+}
+
+
+.pwa-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999; /* Highest possible z-index */
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  /* padding: 16px; */
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.pwa-modal.hidden {
+  transform: translateY(100%);
+}
+
+/* Ensure PWA content is above everything else */
+.pwa-modal > * {
+  position: relative;
+  z-index: 99999;
+}
+
+/* Custom styles for cart dropdown to prevent layout shifting */
+.cart-dropdown,
+.account-dropdown {
+  margin-top: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: absolute !important;
+  z-index: 50;
+  right: 0;
+  border-radius: 8px;
+}
+
+/* Prevent body shifting when dropdown opens */
+body:has(.cart-dropdown),
+body:has(.account-dropdown) {
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
 }

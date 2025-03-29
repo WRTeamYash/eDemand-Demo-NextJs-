@@ -70,7 +70,7 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
   };
 
   return (
-    <DropdownMenu open={isVisible} onOpenChange={onOpenChange}>
+    <DropdownMenu open={isVisible} onOpenChange={onOpenChange} modal={false}>
       <DropdownMenuTrigger asChild>
         <div
           className="text-white primary_bg_color h-[36px] w-[36px] rounded-[8px] p-2 flex items-center justify-center relative cursor-pointer"
@@ -80,7 +80,6 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
           <FaShoppingCart
             size={18}
             className={`${isRtl ? "transform scale-x-[-1]" : ""}`}
-
           />
           {totalItems > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -91,10 +90,12 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-80 p-4"
+        className="w-80 p-4 cart-dropdown"
         align="end"
+        sideOffset={5}
         onMouseEnter={() => onOpenChange(true)}
         onMouseLeave={() => onOpenChange(false)}
+        forceMount
       >
         <DropdownMenuLabel className="text-lg font-semibold">
           {t("serviceInCart")}
@@ -168,14 +169,12 @@ const CartDropdown = ({ isVisible, onOpenChange }) => {
                 >
                   {t("clearCart")}
                 </button>
-                {/* <button className="w-1/2 px-4 py-2 text-sm transition-all duration-300 background_color rounded-md hover:primary_bg_color hover:text-white"> */}
                 <Link
                   href="/cart"
                   className="w-1/2 flex items-center justify-center cursor-pointer px-4 py-2 text-sm transition-all duration-300 background_color rounded-md hover:primary_bg_color hover:text-white"
                 >
                   {t("checkout")}
                 </Link>
-                {/* </button> */}
               </div>
             </div>
           </>

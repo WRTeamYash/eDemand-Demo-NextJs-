@@ -57,7 +57,7 @@ const TopHeader = () => {
   };
 
   return (
-    <div className="hidden lg:block primary_bg_color text-white py-2 px-2 md:px-4">
+    <div className="hidden lg:block primary_bg_color text-white py-2 px-2 md:px-4 top-header">
       <div className="container mx-auto">
         <div className="flex gap-4 md:gap-1 justify-between w-full items-center md:space-y-0">
           <div className="hidden md:flex items-center justify-center gap-2">
@@ -73,8 +73,8 @@ const TopHeader = () => {
             </Link>
           </div>
 
-          <div className="flex items-center justify-between md:justify-end w-full  md:w-auto space-x-4 rtl:space-x-reverse flex-row-reverse">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse ">
+          <div className="flex items-center justify-between md:justify-end w-full md:w-auto space-x-4 rtl:space-x-reverse flex-row-reverse">
+            <div className="flex items-center space-x-2 rtl:space-x-reverse">
               {theme === "dark" ? (
                 <RiMoonClearLine className="text-white" size={22} />
               ) : (
@@ -83,7 +83,7 @@ const TopHeader = () => {
 
               <button
                 onClick={toggleTheme}
-                className="w-12 h-6 bg-[#FFFFFF52] rounded-full p-1 flex items-center justify-between cursor-pointer relative"
+                className="w-12 h-6 bg-[#FFFFFF52] rounded-full p-1 flex items-center justify-between cursor-pointer relative safari-fix"
               >
                 <div
                   className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform absolute ${
@@ -100,6 +100,7 @@ const TopHeader = () => {
               onOpenChange={setIsOpen}
               value={selectedLanguage}
               onValueChange={handleLanguageChange}
+              className="safari-select-fix"
             >
               <SelectTrigger
                 className="bg-transparent w-auto text-white border-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"

@@ -8,7 +8,7 @@ const ProviderReviewCard = ({ review }) => {
   return (
     <div className="card_bg p-6 md:p-3 lg:p-6 rounded-[30px] mx-auto h-[333px] flex flex-col items-start justify-around gap-[24px]">
       {/* Quote Icon */}
-      <div className="w-full h-full flex flex-col items-start gap-3 ">
+      <div className="w-full h-full max-h-[200px] flex flex-col items-start gap-3 ">
         <div className="quote">
           <CustomImageTag
             src={quote?.src}
@@ -18,7 +18,7 @@ const ProviderReviewCard = ({ review }) => {
         </div>
 
         {/* Review Text */}
-        <p className="mb-6 line-clamp-6">{review?.comment}</p>
+        <p className="mb-6 line-clamp-5">{review?.comment}</p>
       </div>
 
       {/* Reviewer Info */}

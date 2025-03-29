@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 
 /**
  * PWA Install Button Component
  * Shows an install button when the PWA is installable but not yet installed
  * Only displays on mobile devices (iOS, Android) when NEXT_PUBLIC_ENABLE_PWA is true
+ * Respects user preferences via cookies
  */
 export default function PWAInstallButton() {
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -15,7 +17,12 @@ export default function PWAInstallButton() {
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isPwaEnabled, setIsPwaEnabled] = useState(false);
+  const [showInstallButton, setShowInstallButton] = useState(false);
 
+  // Cookie names for tracking user preferences
+  const PWA_DISMISSED_COOKIE = 'pwa_install_dismissed';
+  const PWA_INSTALLED_COOKIE = 'pwa_installed';
+  
   useEffect(() => {
     // Check if PWA feature is enabled via env variable
     const pwaEnabled = process.env.NEXT_PUBLIC_PWA_ENABLED === 'true';
@@ -25,6 +32,15 @@ export default function PWAInstallButton() {
     if (!pwaEnabled) return;
 
     if (typeof window === 'undefined') return;
+
+    // Check for cookies first
+    const dismissedByUser = Cookies.get(PWA_DISMISSED_COOKIE) === 'true';
+    const installedCookie = Cookies.get(PWA_INSTALLED_COOKIE) === 'true';
+    
+    if (dismissedByUser || installedCookie) {
+      setShowInstallButton(false);
+      return;
+    }
 
     // Browser detection
     const userAgent = navigator.userAgent;
@@ -47,12 +63,14 @@ export default function PWAInstallButton() {
     const checkInstalled = () => {
       if (window.matchMedia('(display-mode: standalone)').matches) {
         setIsInstalled(true);
+        Cookies.set(PWA_INSTALLED_COOKIE, 'true', { expires: 30 }); // Set cookie for 30 days
         return true;
       }
 
       // Also check for window-controls-overlay mode (Windows PWA)
       if (window.matchMedia('(display-mode: window-controls-overlay)').matches) {
         setIsInstalled(true);
+        Cookies.set(PWA_INSTALLED_COOKIE, 'true', { expires: 30 }); // Set cookie for 30 days
         return true;
       }
 
@@ -69,6 +87,8 @@ export default function PWAInstallButton() {
         e.preventDefault();
         // Store the event for later use
         setInstallPrompt(e);
+        // Show the install button
+        setShowInstallButton(true);
       }
     };
 
@@ -76,40 +96,21 @@ export default function PWAInstallButton() {
 
     window.addEventListener('appinstalled', () => {
       setIsInstalled(true);
+      Cookies.set(PWA_INSTALLED_COOKIE, 'true', { expires: 30 }); // Set cookie for 30 days
+      setShowInstallButton(false);
     });
 
-    // Check installability
-    const checkInstallability = () => {
-      let info = 'Checking installability criteria:\n';
-
-      // Check PWA criteria
-      if (!window.navigator.serviceWorker) {
-        info += '❌ Service Worker is not supported in this browser\n';
-      } else {
-        info += '✅ Service Worker is supported\n';
-      }
-
-      // Check if running in HTTPS
-      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-        info += '❌ Not running in HTTPS (required for PWA installation)\n';
-      } else {
-        info += '✅ Running in HTTPS\n';
-      }
-
-      // Check if it's a mobile device
-      if (!isMobile) {
-        info += '❌ Not a mobile device (install button hidden on desktop)\n';
-      } else {
-        info += '✅ Is a mobile device\n';
-      }
-
-    };
-
-    checkInstallability();
+    // For iOS devices, always show the button once per session
+    if (isIOSDevice && !dismissedByUser && !installedCookie) {
+      setShowInstallButton(true);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => setIsInstalled(true));
+      window.removeEventListener('appinstalled', () => {
+        setIsInstalled(true);
+        Cookies.set(PWA_INSTALLED_COOKIE, 'true', { expires: 30 });
+      });
     };
   }, []);
 
@@ -123,10 +124,19 @@ export default function PWAInstallButton() {
       promptEvent.prompt();
 
       // Wait for the user to respond to the prompt
-      await promptEvent.userChoice;
+      const choiceResult = await promptEvent.userChoice;
+      
+      if (choiceResult.outcome === 'accepted') {
+        // User accepted the install prompt
+        Cookies.set(PWA_INSTALLED_COOKIE, 'true', { expires: 30 });
+      } else {
+        // User dismissed the install prompt
+        Cookies.set(PWA_DISMISSED_COOKIE, 'true', { expires: 7 }); // Set for 7 days
+      }
 
       // Clear the saved prompt since it can't be used again
       setInstallPrompt(null);
+      setShowInstallButton(false);
     } else {
       alert(
         'Installation prompt not available. Please try again later or check if the app is already installed.'
@@ -134,60 +144,73 @@ export default function PWAInstallButton() {
     }
   };
 
+  // Close button handler
+  const handleCloseButton = () => {
+    Cookies.set(PWA_DISMISSED_COOKIE, 'true', { expires: 7 }); // Set cookie for 7 days
+    setShowInstallButton(false);
+  };
+
+  // Close iOS guide and set cookie
+  const handleCloseIOSGuide = () => {
+    setShowIOSGuide(false);
+    Cookies.set(PWA_DISMISSED_COOKIE, 'true', { expires: 7 }); // Set cookie for 7 days
+  };
+
   // Don't render anything if:
   // 1. PWA is not enabled via env variable
   // 2. The app is already installed
   // 3. It's not a mobile device
-  if (!isPwaEnabled || isInstalled || !isMobileDevice) {
+  // 4. User has dismissed the prompt
+  if (!isPwaEnabled || isInstalled || !isMobileDevice || !showInstallButton) {
     return null;
   }
 
-  // Show install button only for mobile devices:
-  // 1. iOS devices always (they don't support beforeinstallprompt)
-  // 2. Android devices when installPrompt is available
-  const shouldShowInstallButton = isIOS || (isMobileDevice && installPrompt);
-  if (shouldShowInstallButton) {
-    return (
-      <>
+  // Show install button based on our state which respects cookies
+  return (
+    <>
+      <div className="fixed bottom-20 right-2 z-50 flex items-end">
         <button
           onClick={handleInstallClick}
-          className="fixed bottom-4 right-4 z-50 flex items-center space-x-2 rounded-md primary_bg_color px-4 py-2 text-white shadow-lg"
+          className="flex items-center space-x-2  primary_bg_color px-4 py-2 text-white shadow-lg rounded-l-md"
           aria-label={`Install ${process.env.NEXT_PUBLIC_APP_NAME || 'eDemand'}`}
         >
           <span>{isIOS ? 'Add to Home Screen' : `Install ${process.env.NEXT_PUBLIC_APP_NAME || 'eDemand'}`}</span>
         </button>
-
         
-       
+        <button 
+          onClick={handleCloseButton} 
+          className="bg-black text-white py-2 px-4 w-6 h-full flex items-center justify-center rounded-r-md"
+          aria-label="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
 
-        {/* iOS Installation Guide Modal */}
-        {showIOSGuide && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="max-w-md rounded-lg bg-white text-black p-6 shadow-xl">
-              <h3 className="mb-4 text-lg font-bold">Install on iOS</h3>
-              <p className="mb-4">To install this app on your iOS device:</p>
-              <ol className="mb-4 ml-5 list-decimal space-y-2">
-                <li>Tap the Share button at the bottom of the screen</li>
-                <li>Scroll down and tap "Add to Home Screen"</li>
-                <li>Tap "Add" in the top right corner</li>
-              </ol>
-              {!isSafari && (
-                <p className="mb-4 text-red-500">
-                  ⚠️ You need to use Safari browser to install this app on iOS.
-                </p>
-              )}
-              <button
-                onClick={() => setShowIOSGuide(false)}
-                className="w-full rounded-md primary_bg_color py-2 text-white"
-              >
-                Close
-              </button>
-            </div>
+      {/* iOS Installation Guide Modal */}
+      {showIOSGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="max-w-md rounded-lg bg-white text-black p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-bold">Install on iOS</h3>
+            <p className="mb-4">To install this app on your iOS device:</p>
+            <ol className="mb-4 ml-5 list-decimal space-y-2">
+              <li>Tap the Share button at the bottom of the screen</li>
+              <li>Scroll down and tap "Add to Home Screen"</li>
+              <li>Tap "Add" in the top right corner</li>
+            </ol>
+            {!isSafari && (
+              <p className="mb-4 text-red-500">
+                ⚠️ You need to use Safari browser to install this app on iOS.
+              </p>
+            )}
+            <button
+              onClick={handleCloseIOSGuide}
+              className="w-full rounded-md primary_bg_color py-2 text-white"
+            >
+              Close
+            </button>
           </div>
-        )}
-      </>
-    );
-  }
-
-  return null;
+        </div>
+      )}
+    </>
+  );
 } 

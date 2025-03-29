@@ -52,7 +52,7 @@ const HomeCategories = ({ categoriesData }) => {
   };
 
   return (
-    <div className="categories light_bg_color pt-4 mt-[18px] sm:mt-[42px] md:mt-[0] pb-0 md:py-8 homeCategories">
+    <div className="categories light_bg_color pt-4 mt-[17px] sm:mt-[42px] md:mt-[0] pb-0 md:py-8 homeCategories">
       <div className="container mx-auto px-4 md:px-8">
         <div className="hidden md:block">
         <CommanHeadline

@@ -56,7 +56,7 @@ const MainLocation = ({ landingPageBg, landingPageLogo, title }) => {
               <div className="navlogo pt-[20px] sm:pt-[40px] md:pt-[60px] w-[180px]">
               <CustomImageTag
                 alt="image"
-                className="logo h-[40px] sm:h-[45px] md:h-[50px] w-auto"
+                className="logo h-[50px] w-auto"
                 src={landingPageLogo}
                 />
               </div>

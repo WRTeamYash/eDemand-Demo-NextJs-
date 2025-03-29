@@ -38,7 +38,7 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
 
 
   return (
-    <DropdownMenu open={isVisible} onOpenChange={onOpenChange}>
+    <DropdownMenu open={isVisible} onOpenChange={onOpenChange} modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           className="flex items-center space-x-2 light_bg_color primary_text_color px-4 py-2 rounded-md"
@@ -56,10 +56,12 @@ const AccountDialog = ({ isVisible, onOpenChange, userData, handleLogout }) => {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-80 p-4"
+        className="w-80 p-4 account-dropdown"
         align="end"
+        sideOffset={5}
         onMouseEnter={() => onOpenChange(true)}
         onMouseLeave={() => onOpenChange(false)}
+        forceMount
       >
         <DropdownMenuLabel className="flex items-center space-x-2">
           <Avatar className="w-[56px] h-[56px]">

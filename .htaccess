@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /out/
+    RewriteBase /
 
     # Enable symlinks
     Options +FollowSymLinks
@@ -19,35 +19,35 @@
     RewriteRule ^manifest\.json$ manifest.json [L]
 
     # Handle Next.js catch-all routes for categories
-    RewriteCond %{REQUEST_URI} ^/out/services/
+    RewriteCond %{REQUEST_URI} ^/services/
     RewriteRule ^services/([^/]+)/?$ services/[...slug].html [L]
 
     # Handle Next.js catch-all routes for booking   
-    RewriteCond %{REQUEST_URI} ^/out/booking/
+    RewriteCond %{REQUEST_URI} ^/booking/
     RewriteRule ^booking/([^/]+)/?$ booking/[...slug].html [L]
 
     # Handle Next.js catch-all routes for my-service-request-details
-    RewriteCond %{REQUEST_URI} ^/out/my-service-request-details/
+    RewriteCond %{REQUEST_URI} ^/my-service-request-details/
     RewriteRule ^my-service-request-details/([^/]+)/?$ my-service-request-details/[...slug].html [L]
 
     # Handle Next.js catch-all routes for provider-details
-    RewriteCond %{REQUEST_URI} ^/out/provider-details/
+    RewriteCond %{REQUEST_URI} ^/provider-details/
     RewriteRule ^provider-details/([^/]+)/?$ provider-details/[...slug].html [L]
 
     # Handle Next.js catch-all routes for search
-    RewriteCond %{REQUEST_URI} ^/out/search/
+    RewriteCond %{REQUEST_URI} ^/search/
     RewriteRule ^search/([^/]+)/?$ search/[...slug].html [L]
 
     # Handle page routes - check if the HTML file exists
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{DOCUMENT_ROOT}/out/$1.html -f
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
     RewriteRule ^([^/]+)/?$ $1.html [L]
 
     # Handle directory index files
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{DOCUMENT_ROOT}/out/$1/index.html -f
+    RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
     RewriteRule ^([^/]+)/?$ $1/index.html [L]
 
     # Final fallback to 404 page

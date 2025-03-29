@@ -28,7 +28,8 @@ const withAuth = (WrappedComponent) => {
                 '/notifications',
                 '/payment-status',
                 '/payment-history',
-                '/booking/[...slug]'
+                '/booking/[...slug]',
+                '/profile'
             ];
             const isPrivateRoute = privateRoutes.includes(router.pathname);
             if (isPrivateRoute && !isLoggedIn) {

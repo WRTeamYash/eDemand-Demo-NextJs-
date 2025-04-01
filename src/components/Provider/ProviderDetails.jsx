@@ -454,53 +454,55 @@ const ProviderDetails = () => {
                           <h2 className="text-[20px] font-semibold">
                             {t("photos")}
                           </h2>
-                        </div>
-                        <div className="photos grid grid-cols-3 gap-4 mt-6">
-                          {providerData?.other_images
-                            ?.slice(0, 4)
-                            .map((image, index) => (
-                              <div
-                                className="photo cursor-pointer"
-                                key={index}
-                                onClick={() => openLightbox(index)}
-                              >
-                                <CustomImageTag
-                                  src={image}
-                                  alt={`other_image_${index}`}
-                                  className="rounded-md w-full h-[80px] object-contain md:object-cover"
-                                />
-                              </div>
-                            ))}
+                          <div className="photos grid grid-cols-3 gap-4 mt-6">
+                            {providerData?.other_images
+                              ?.slice(0, 4)
+                              .map((image, index) => (
+                                <div
+                                  className="photo cursor-pointer"
+                                  key={index}
+                                  onClick={() => openLightbox(index)}
+                                >
+                                  <CustomImageTag
+                                    src={image}
+                                    alt={`other_image_${index}`}
+                                    className="rounded-md w-full h-[80px] object-contain md:object-cover"
+                                  />
+                                </div>
+                              ))}
 
-                          {providerData?.other_images?.length > 5 && (
-                            <div className="photo col-span-2 cursor-pointer">
-                              <div
-                                className="relative rounded-md overflow-hidden"
-                                onClick={() => openLightbox(4)} // Open lightbox starting from the 6th image
-                              >
-                                <CustomImageTag
-                                  src={providerData?.other_images[4]} // Use the 6th image as the placeholder for "More"
-                                  alt={providerData?.company_name}
-                                  className="w-full h-[80px] object-cover"
-                                />
-                                <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center">
-                                  <span className="text-md font-bold text-white">
-                                    +{providerData.other_images.length - 5}{" "}
-                                    {t("more")}
-                                  </span>
+                            {providerData?.other_images?.length >= 5 && (
+                              <div className="photo col-span-2 cursor-pointer">
+                                <div
+                                  className="relative rounded-md overflow-hidden"
+                                  onClick={() => openLightbox(4)}
+                                >
+                                  <CustomImageTag
+                                    src={providerData?.other_images[4]}
+                                    alt={providerData?.company_name}
+                                    className="w-full h-[80px] object-cover"
+                                  />
+                                  {providerData?.other_images?.length > 5 && (
+                                    <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center">
+                                      <span className="text-md font-bold text-white">
+                                        +{providerData.other_images.length - 5} {t("more")}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            </div>
-                          )}
-                          {isLightboxOpen && (
-                            <Lightbox
-                              isLightboxOpen={isLightboxOpen}
-                              images={providerData.other_images} // Pass all images to the Lightbox
-                              initialIndex={currentImageIndex} // Start at the clicked image
-                              onClose={closeLightbox} // Close handler
-                            />
-                          )}
+                            )}
+                            {isLightboxOpen && (
+                              <Lightbox
+                                isLightboxOpen={isLightboxOpen}
+                                images={providerData.other_images} // Pass all images to the Lightbox
+                                initialIndex={currentImageIndex} // Start at the clicked image
+                                onClose={closeLightbox} // Close handler
+                              />
+                            )}
+                          </div>
                         </div>
+
                       </div>
                     )}
                   </div>

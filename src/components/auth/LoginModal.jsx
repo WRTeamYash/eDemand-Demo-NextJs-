@@ -6,7 +6,6 @@ import CustomImageTag from "../ReUseableComponents/CustomImageTag";
 import {
   handleFirebaseAuthError,
   isDemoMode,
-  useIsDarkMode,
   useRTL,
 } from "@/utils/Helper";
 import { MdClose } from "react-icons/md";
@@ -17,6 +16,11 @@ import {
   RecaptchaVerifier,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import FirebaseData from "@/utils/Firebase";
 import { toast } from "react-toastify";
@@ -58,6 +62,11 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
   const inputRefs = useRef([]);
   const [smsMethod, setSmsMethod] = useState("");
   const [messageCode, setMessageCode] = useState(null); // Add this state to store message code
+  const [isProcessingRedirect, setIsProcessingRedirect] = useState(false);
+  const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
+  const [forcePopup, setForcePopup] = useState(false);
+  const [popupFailedCount, setPopupFailedCount] = useState(0);
+  const [isGoogleAuthInProgress, setIsGoogleAuthInProgress] = useState(false);
 
   const settingsData = useSelector((state) => state?.settingsData);
   const fcmToken = settingsData?.fcmToken;
@@ -392,39 +401,54 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
   };
 
   const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider(); // Create a GoogleAuthProvider instance
-    const auth = getAuth(); // Get Firebase auth instance
-
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    const auth = getAuth();
+    
+    // Prevent multiple attempts
+    if (loading) return;
+    
     try {
-      const result = await signInWithPopup(auth, provider); // Sign in with popup
-      const user = result.user; // Get user details
-
-      if (user) {
+      setLoading(true);
+      
+      // Only use ONE authentication method at a time
+      const result = await signInWithPopup(auth, provider);
+      
+      if (result && result.user) {
+        const user = result.user;
+        
+        // Create user auth data and dispatch to Redux
         const userAuthData = {
           ...user,
-          type: "google", // Add login type
+          type: "google",
         };
         dispatch(setUserAuthData(userAuthData));
-
+        
+        // Now verify the user
         const response = await verifyUserApi({ uid: user?.uid });
-
+        
+        
         if (response.message_code === "101") {
-          try {
-            const registerResponse = await registerUserApi({
-              web_fcm_id: fcmToken,
-              email: user?.email,
-              username: user?.displayName,
-              mobile: user?.phone || "",
-              loginType: "google",
-              uid: user?.uid,
-            });
-            dispatch(setUserData(registerResponse?.data));
-            dispatch(setToken(registerResponse?.token));
-            toast.success(registerResponse?.message);
-            handleClose();
-          } catch (error) {
-            console.error(error);
-          }
+          // New user - register
+          const registerResponse = await registerUserApi({
+            web_fcm_id: fcmToken,
+            email: user?.email,
+            username: user?.displayName,
+            mobile: user?.phone || "",
+            loginType: "google",
+            uid: user?.uid,
+          });
+          
+          // Dispatch user data with Redux
+          await Promise.all([
+            dispatch(setUserData(registerResponse?.data)),
+            dispatch(setToken(registerResponse?.token))
+          ]);
+          
+          toast.success(registerResponse?.message || t("loginSuccessful"));
+          handleClose();
         } else if (response.message_code === "102") {
           setOpenProfileModal(true);
           handleClose();
@@ -434,186 +458,359 @@ const LoginModal = ({ open, close, setOpenProfileModal }) => {
         }
       }
     } catch (error) {
-      console.error("Error during Google Sign-In:", error.code);
-
-      if (error.code === "auth/popup-closed-by-user") {
-        toast.error(t("popupClosedByUser")); // Show error toast immediately
+      console.error("Google sign-in error:", error);
+      
+      if (error.code === "auth/popup-blocked") {
+        toast.warning(t("popupBlockedTryingRedirect"));
+        
+        // Store a flag in sessionStorage to check after redirect
+        sessionStorage.setItem("pendingGoogleRedirect", "true");
+        
+        // Use redirect method as fallback
+        await signInWithRedirect(auth, provider);
+      } else if (error.code === "auth/popup-closed-by-user") {
+        toast.info(t("loginCanceled"));
       } else {
         handleFirebaseAuthError(t, error.code);
       }
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Add this useEffect to initialize auth persistence
+  useEffect(() => {
+    const auth = getAuth();
+    setPersistence(auth, browserLocalPersistence)
+      .catch((error) => {
+        console.error("Error setting persistence:", error);
+      });
+  }, []);
+
+  // Handle redirect result when component mounts or when opened
+  useEffect(() => {
+    if (!open || hasCheckedRedirect) return;
+    
+    const auth = getAuth();
+    setIsProcessingRedirect(true);
+    
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result && result.user) {
+          const user = result.user;
+          
+          
+          const userAuthData = {
+            ...user,
+            type: "google",
+          };
+          dispatch(setUserAuthData(userAuthData));
+          
+          try {
+            const response = await verifyUserApi({ uid: user?.uid });
+            
+            if (response.message_code === "101") {
+              // New user - register
+              const registerResponse = await registerUserApi({
+                web_fcm_id: fcmToken,
+                email: user?.email,
+                username: user?.displayName,
+                mobile: user?.phone || "",
+                loginType: "google",
+                uid: user?.uid,
+              });
+              
+              dispatch(setUserData(registerResponse?.data));
+              dispatch(setToken(registerResponse?.token));
+              toast.success(registerResponse?.message);
+              handleClose();
+            } else if (response.message_code === "102") {
+              setOpenProfileModal(true);
+              handleClose();
+            } else if (response.message_code === "103") {
+              toast.error(t("userDeactivated"));
+              handleClose();
+            }
+          } catch (error) {
+            console.error("API error after redirect:", error);
+            toast.error(t("somethingWentWrong"));
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting redirect result:", error);
+        if (error.code) {
+          handleFirebaseAuthError(t, error.code);
+        }
+      })
+      .finally(() => {
+        setIsProcessingRedirect(false);
+        setHasCheckedRedirect(true);
+      });
+  }, [open, hasCheckedRedirect]);
+
+  // Also add this useEffect to monitor auth state changes
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && !hasCheckedRedirect) {
+        
+        // Force a redirect check if we detect a user but haven't checked redirect yet
+        setHasCheckedRedirect(false);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [hasCheckedRedirect]);
+
+  // Check for redirect results when component mounts
+  useEffect(() => {
+    if (!open) return;
+    
+    const auth = getAuth();
+    const checkRedirect = async () => {
+      if (sessionStorage.getItem("pendingGoogleRedirect") === "true") {
+        setLoading(true);
+        try {
+          const result = await getRedirectResult(auth);
+          if (result && result.user) {
+            // Handle successful redirect result (same code as above)
+            // ...
+          }
+        } catch (error) {
+          console.error("Redirect error:", error);
+          handleFirebaseAuthError(t, error.code);
+        } finally {
+          sessionStorage.removeItem("pendingGoogleRedirect");
+          setLoading(false);
+        }
+      }
+    };
+    
+    checkRedirect();
+  }, [open]);
 
   return (
     <>
       <Dialog open={open}>
         <DialogTitle className="hidden"></DialogTitle>
         <DialogContent className="card_bg p-6 md:p-8 rounded-md shadow-lg w-full max-w-xl">
-          {/* Header */}
-          <div className="w-full flex justify-between items-center mb-4">
-            <CustomImageTag
-              src={websettings?.web_logo}
-              alt="logo"
-              className="h-full w-[160px] object-cover"
-            />
-            {/* Close Button */}
-            <button
-              onClick={close}
-              className="rounded-full description_color text-white p-1"
-            >
-              <MdClose size={24} />
-            </button>
-          </div>
-
-          {/* Conditional Rendering */}
-          {!showOtpScreen ? (
-            // Phone Input Screen
-            <>
-              <div className="flex flex-col gap-1 mb-6">
-                {/* Welcome Text */}
-                <div className="text-2xl font-bold">{t("welcome")}</div>
-                <p className="description_color ">
-                  {t("enterYourNumberToGetVerified")}
-                </p>
-              </div>
-              {/* Phone Input Field */}
-              <div className="w-full h-[44px] card_bg">
-                <PhoneInput
-                  inputStyle={{ direction: isRtl ? "rtl" : "ltr" }}
-                  country={process?.env?.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE} // Default country
-                  value={phone} // Ensure value is properly linked to state
-                  onChange={(value, data) => handleInputChange(value, data)}
-                  onCountryChange={(code) => setCountryCode(code)}
-                  className="w-full h-full"
-                  containerStyle={{ marginBottom: "1rem" }}
-                  inputClass="!w-full !h-full rounded-md border-2 px-3 py-2 focus:outline-none !bg-transparent"
-                />
-              </div>
-
-              {/* Continue Button */}
-              {loading ? (
-                <div className="w-full p-3 flex items-center justify-center font-semibold rounded-md primary_bg_color">
-                  <MiniLoader />
-                </div>
-              ) : (
-                <button
-                  onClick={handleContinue}
-                  className={`w-full py-2  font-semibold rounded-md ${
-                    phone
-                      ? "primary_bg_color text-white"
-                      : "background_color description_color cursor-not-allowed"
-                  }`}
-                  disabled={!phone}
-                >
-                  {t("continue")}
-                </button>
-              )}
-
-              {/* Divider */}
-              <div className="relative flex justify-center items-center my-4">
-                <span className="w-1/3 h-[1px] bg-gray-300"></span>
-                <span className="px-2 text-sm description_color text-center">
-                  {t("orContinueWith")}
-                </span>
-                <span className="w-1/3 h-[1px] bg-gray-300"></span>
-              </div>
-
-              {/* Google Sign-In Button */}
-              <button
-                className="flex items-center justify-center gap-2 w-full border rounded-md py-2 transition-all duration-150 hover:primary_text_color "
-                onClick={handleGoogleSignIn}
-              >
-                <FcGoogle size={20} />
-                <span className="description_color font-medium">
-                  {t("signInWithGoogle")}
-                </span>
-              </button>
-
-              {/* Footer */}
-              <p className="text-xs text-center description_color mt-6">
-                {t("byClickingContinueYouAgreeToOur")}{" "}
-                <Link
-                  href="/terms-and-conditions"
-                  className="primary_text_color underline"
-                >
-                  {t("termsOfService")}
-                </Link>{" "}
-                &{" "}
-                <Link
-                  href="/privacy-policy"
-                  className="primary_text_color underline"
-                >
-                  {t("privacyPolicy")}
-                </Link>
-              </p>
-            </>
+          {/* Show loading indicator when processing redirect */}
+          {isProcessingRedirect ? (
+            <div className="flex flex-col items-center justify-center h-60">
+              <MiniLoader size={40} />
+              <p className="mt-4 text-center">{t("processingLogin")}</p>
+            </div>
           ) : (
-            // OTP Verification Screen
             <>
-              <div className="text-2xl font-bold mb-2">{t("verifyOTP")}</div>
-              <p className="description_color ">
-                {t("weJustSentYouSixDigitCode")}
-                <br />
-                <span
-                  className="font-bold"
-                  style={{ direction: "ltr", unicodeBidi: "isolate" }}
+              {/* Header */}
+              <div className="w-full flex justify-between items-center mb-4">
+                <CustomImageTag
+                  src={websettings?.web_logo}
+                  alt="logo"
+                  className="h-full w-[160px] object-cover"
+                />
+                {/* Close Button */}
+                <button
+                  onClick={close}
+                  className="rounded-full description_color text-white p-1"
                 >
-                  {showFullPhoneNumber}
-                </span>
-              </p>
-              <a
-                href="#"
-                className="primary_text_color font-medium underline text-sm mb-4 block"
-                onClick={() => setShowOtpScreen(false)} // Go back to phone input
-              >
-                {t("wrongNumber")}
-              </a>
-
-              {/* OTP Input Fields */}
-              <div className="flex justify-center gap-2 mb-4">
-                {otp.map((data, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    maxLength={1}
-                    value={data}
-                    onChange={(e) => handleOtpChange(e.target.value, index)}
-                    onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                    ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
-                    className="transition-all duration-300 w-10 h-10 lg:w-12 lg:h-12 text-center border border-gray-300 rounded-md text-xl 
-                    focus:light_bg_color focus:border_color focus:ring-0"
-                  />
-                ))}
+                  <MdClose size={24} />
+                </button>
               </div>
 
-              {/* OTP Timer */}
-              <button
-                disabled={!resendAvailable}
-                onClick={handleResendOtp}
-                className={`w-full py-2 font-semibold rounded-md ${
-                  resendAvailable
-                    ? "primary_bg_color text-white"
-                    : "background_color description_color cursor-not-allowed"
-                }`}
-              >
-                {resendAvailable
-                  ? t("resendOTP")
-                  : `${t("resendIn")} ${formatTimer(timer)}`}
-              </button>
+              {/* Conditional Rendering */}
+              {!showOtpScreen ? (
+                // Phone Input Screen
+                <>
+                  <div className="flex flex-col gap-1 mb-6">
+                    {/* Welcome Text */}
+                    <div className="text-2xl font-bold">{t("welcome")}</div>
+                    <p className="description_color ">
+                      {t("enterYourNumberToGetVerified")}
+                    </p>
+                  </div>
+                  {/* Phone Input Field */}
+                  <div className="w-full h-[44px] card_bg">
+                    <PhoneInput
+                      inputStyle={{ direction: isRtl ? "rtl" : "ltr" }}
+                      country={process?.env?.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE} // Default country
+                      value={phone} // Ensure value is properly linked to state
+                      onChange={(value, data) => handleInputChange(value, data)}
+                      onCountryChange={(code) => setCountryCode(code)}
+                      className="w-full h-full"
+                      containerStyle={{ marginBottom: "1rem" }}
+                      inputClass="!w-full !h-full rounded-md border-2 px-3 py-2 focus:outline-none !bg-transparent"
+                    />
+                  </div>
 
-              {/* Verify Button */}
-              {loading ? (
-                <div className="w-full p-3 flex items-center justify-center font-semibold rounded-md primary_bg_color">
-                  <MiniLoader />
-                </div>
+                  {/* Continue Button */}
+                  {loading ? (
+                    <div className="w-full p-3 flex items-center justify-center font-semibold rounded-md primary_bg_color">
+                      <MiniLoader />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleContinue}
+                      className={`w-full py-2  font-semibold rounded-md ${
+                        phone
+                          ? "primary_bg_color text-white"
+                          : "background_color description_color cursor-not-allowed"
+                      }`}
+                      disabled={!phone}
+                    >
+                      {t("continue")}
+                    </button>
+                  )}
+
+                  {/* Divider */}
+                  <div className="relative flex justify-center items-center my-4">
+                    <span className="w-1/3 h-[1px] bg-gray-300"></span>
+                    <span className="px-2 text-sm description_color text-center">
+                      {t("orContinueWith")}
+                    </span>
+                    <span className="w-1/3 h-[1px] bg-gray-300"></span>
+                  </div>
+
+                  {/* Google Sign-In Button - show loading state when authentication is in progress */}
+                  <button
+                    className="flex items-center justify-center gap-2 w-full border rounded-md py-2 transition-all duration-150 hover:primary_text_color"
+                    onClick={handleGoogleSignIn}
+                    disabled={loading || isGoogleAuthInProgress}
+                  >
+                    {isGoogleAuthInProgress ? (
+                      <>
+                        <MiniLoader size={20} />
+                        <span className="description_color font-medium ml-2">
+                          {t("authenticatingWithGoogle")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <FcGoogle size={20} />
+                        <span className="description_color font-medium">
+                          {t("signInWithGoogle")}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Show informative message during Google auth */}
+                  {isGoogleAuthInProgress && (
+                    <div className="mt-4 text-sm text-center p-3 bg-blue-50 border border-blue-100 rounded-md">
+                      <p className="text-blue-700">
+                        {t("completeGoogleAuthInPopup")}
+                      </p>
+                      <p className="text-blue-600 mt-1 text-xs">
+                        {t("ifPopupClosedClickAgain")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Add this if popup keeps failing */}
+                  {popupFailedCount > 1 && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-700">
+                        {t("havingTroubleWithPopup")} <button 
+                          onClick={() => {
+                            const auth = getAuth();
+                            signInWithRedirect(auth, provider);
+                          }}
+                          className="text-blue-600 underline"
+                        >
+                          {t("tryRedirectMethod")}
+                        </button>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <p className="text-xs text-center description_color mt-6">
+                    {t("byClickingContinueYouAgreeToOur")}{" "}
+                    <Link
+                      href="/terms-and-conditions"
+                      className="primary_text_color underline"
+                    >
+                      {t("termsOfService")}
+                    </Link>{" "}
+                    &{" "}
+                    <Link
+                      href="/privacy-policy"
+                      className="primary_text_color underline"
+                    >
+                      {t("privacyPolicy")}
+                    </Link>
+                  </p>
+                </>
               ) : (
-                <button
-                  onClick={verifyOtp}
-                  className="w-full py-2 font-semibold rounded-md primary_bg_color text-white"
-                >
-                  {t("verifyOTP")}
-                </button>
+                // OTP Verification Screen
+                <>
+                  <div className="text-2xl font-bold mb-2">{t("verifyOTP")}</div>
+                  <p className="description_color ">
+                    {t("weJustSentYouSixDigitCode")}
+                    <br />
+                    <span
+                      className="font-bold"
+                      style={{ direction: "ltr", unicodeBidi: "isolate" }}
+                    >
+                      {showFullPhoneNumber}
+                    </span>
+                  </p>
+                  <a
+                    href="#"
+                    className="primary_text_color font-medium underline text-sm mb-4 block"
+                    onClick={() => setShowOtpScreen(false)} // Go back to phone input
+                  >
+                    {t("wrongNumber")}
+                  </a>
+
+                  {/* OTP Input Fields */}
+                  <div className="flex justify-center gap-2 mb-4">
+                    {otp.map((data, index) => (
+                      <input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        maxLength={1}
+                        value={data}
+                        onChange={(e) => handleOtpChange(e.target.value, index)}
+                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                        ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
+                        className="transition-all duration-300 w-10 h-10 lg:w-12 lg:h-12 text-center border border-gray-300 rounded-md text-xl 
+                        focus:light_bg_color focus:border_color focus:ring-0"
+                      />
+                    ))}
+                  </div>
+
+                  {/* OTP Timer */}
+                  <button
+                    disabled={!resendAvailable}
+                    onClick={handleResendOtp}
+                    className={`w-full py-2 font-semibold rounded-md ${
+                      resendAvailable
+                        ? "primary_bg_color text-white"
+                        : "background_color description_color cursor-not-allowed"
+                    }`}
+                  >
+                    {resendAvailable
+                      ? t("resendOTP")
+                      : `${t("resendIn")} ${formatTimer(timer)}`}
+                  </button>
+
+                  {/* Verify Button */}
+                  {loading ? (
+                    <div className="w-full p-3 flex items-center justify-center font-semibold rounded-md primary_bg_color">
+                      <MiniLoader />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={verifyOtp}
+                      className="w-full py-2 font-semibold rounded-md primary_bg_color text-white"
+                    >
+                      {t("verifyOTP")}
+                    </button>
+                  )}
+                </>
               )}
             </>
           )}

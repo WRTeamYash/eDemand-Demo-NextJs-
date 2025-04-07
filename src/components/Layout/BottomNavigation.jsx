@@ -5,6 +5,7 @@ import { homeIcon, providersIcon, servicesIcon, loginIcon, userIcon } from '../R
 import LoginModal from '../auth/LoginModal'
 import { useTranslation } from './TranslationContext'
 import { isLogin } from '@/utils/Helper'
+import EditProfileModal from '../auth/EditProfile'
 
 const BottomNavigation = () => {
     const t = useTranslation();
@@ -12,6 +13,9 @@ const BottomNavigation = () => {
     const isLoggedIn = isLogin();
     const currentPath = router.pathname;
     const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+    const [openProfileModal, setOpenProfileModal] = useState(false);
+
+
 
     // Base navigation links
     const baseNavLinks = [
@@ -58,13 +62,13 @@ const BottomNavigation = () => {
         <>
             <div className='fixed bottom-0 left-0 right-0 grid grid-cols-4 gap-4 w-full card_bg h-[64px] text-[10px] font-normal z-10 md:hidden'>
                 {navLinks.map((nav, index) => {
-                    const isActive = 
-                        nav.link === '/' 
-                            ? currentPath === '/' 
+                    const isActive =
+                        nav.link === '/'
+                            ? currentPath === '/'
                             : currentPath.startsWith(nav.link);
-                    
+
                     return (
-                        <Link 
+                        <Link
                             href={nav.link}
                             key={index}
                             onClick={(e) => {
@@ -72,9 +76,8 @@ const BottomNavigation = () => {
                                     e.preventDefault();
                                 }
                             }}
-                            className={`flex flex-col items-center gap-1 m-auto ${
-                                isActive ? 'primary_text_color font-medium' : 'text-gray-500'
-                            }`}
+                            className={`flex flex-col items-center gap-1 m-auto ${isActive ? 'primary_text_color font-medium' : 'text-gray-500'
+                                }`}
                         >
                             <div className={`flex items-center justify-center  ${isActive ? 'bottom_nav_icon' : 'bottom_nav_icon_white'}`}>
                                 {nav?.icon}
@@ -90,6 +93,14 @@ const BottomNavigation = () => {
                 <LoginModal
                     open={isLoginModalOpen}
                     close={() => setLoginModalOpen(false)}
+                    setOpenProfileModal={setOpenProfileModal}
+                />
+            )}
+            {openProfileModal && (
+                <EditProfileModal
+                    open={openProfileModal}
+                    close={() => setOpenProfileModal(false)}
+                    isEditProfile={false}
                 />
             )}
         </>

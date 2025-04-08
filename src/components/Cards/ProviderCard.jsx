@@ -50,17 +50,17 @@ const ProviderCard = ({ provider }) => {
       <div className="flex flex-col md:flex-row items-center md:items-center md:justify-start w-full gap-5 ">
         <CustomImageTag
           src={provider?.image}
-          alt={provider?.username}
+          alt={provider?.company_name}
           className="w-[80px] h-[80px] rounded-[16px] object-cover"
         />
         <div className="flex flex-col gap-1 w-full">
-          <h3 className="text-lg font-semibold">{provider?.username}</h3>
+          <h3 className="text-lg font-semibold">{provider?.company_name}</h3>
           <p className="text-sm description_color">{provider?.location}</p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
-            {provider?.total_rating > 0 && (
+            {provider?.average_rating > 0 && (
               <div className="text-md font-medium bg-[#DB930514] text-[#DB9305] p-1 rounded-[4px] flex items-center justify-center gap-1">
                 <FaStar />
-                <span>{provider?.total_rating}</span>
+                <span>{provider?.average_rating}</span>
               </div>
             )}
             {provider?.completed_orders > 0 && (

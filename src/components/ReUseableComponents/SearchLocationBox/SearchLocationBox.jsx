@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import { getFormattedAddress } from "@/utils/Helper";
 import { useTranslation } from "@/components/Layout/TranslationContext";
 import { getPlacesDetailsForWebApi, getPlacesForWebApi } from "@/api/apiRoutes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SearchLocationBox = ({ open, setIsModalOpen }) => {
   const dispatch = useDispatch();
@@ -24,7 +25,7 @@ const SearchLocationBox = ({ open, setIsModalOpen }) => {
   const [searchInput, setSearchInput] = useState(""); // Track user input
   const [isSelecting, setIsSelecting] = useState(false); // Prevent API calls during selection
   const [placeSuggestions, setPlaceSuggestions] = useState([]); // Store API results
-  const [isLoading, setIsLoading] = useState(false); // API loading state
+  const [isLoading, setIsLoading] = useState(true); // API loading state
   const [activeIndex, setActiveIndex] = useState(-1); // Track currently focused suggestion
   const [fullAddress, setFullAddress] = useState({
     lat: "",
@@ -75,20 +76,27 @@ const SearchLocationBox = ({ open, setIsModalOpen }) => {
   // Handle place selection
   const handlePlaceSelect = async (place) => {
     setIsSelecting(true); // Mark as selecting to prevent API call
+    setIsLoading(true); // Show loading state while fetching details
 
     setSearchInput(place.description); // Set the selected place in the input field
 
-    const fullAddress = await fetchPlaceDetails(place);
+    try {
+      const fullAddress = await fetchPlaceDetails(place);
 
-    setFullAddress({
-      lat: fullAddress?.geometry?.location?.lat,
-      lng: fullAddress?.geometry?.location?.lng,
-      address: fullAddress?.formatted_address,
-    });
-
-    // Clear the search input and suggestions
-    setPlaceSuggestions([]); // Clear suggestions
-    setActiveIndex(-1); // Reset active index
+      setFullAddress({
+        lat: fullAddress?.geometry?.location?.lat,
+        lng: fullAddress?.geometry?.location?.lng,
+        address: fullAddress?.formatted_address,
+      });
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+      toast.error(t("errorFetchingPlaceDetails"));
+    } finally {
+      // Clear the search input and suggestions
+      setPlaceSuggestions([]); // Clear suggestions
+      setActiveIndex(-1); // Reset active index
+      setIsLoading(false); // Hide loading
+    }
 
     // Delay allowing API calls after a short timeout
     setTimeout(() => setIsSelecting(false), 500);
@@ -174,58 +182,102 @@ const SearchLocationBox = ({ open, setIsModalOpen }) => {
       toast.error("Failed to fetch location: " + error.message);
     }
   };
+
+  // Update input change handler to clear address when input is empty
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    
+    // Clear stored address if input is empty
+    if (!value.trim()) {
+      setFullAddress({
+        lat: "",
+        lng: "",
+        address: "",
+      });
+    }
+  };
+
+  // Add this Skeleton component inside your SearchLocationBox component
+  const LocationSkeleton = () => (
+    <div className="absolute z-10 w-full top-8 card_bg rounded-b-xl shadow-lg max-h-60 overflow-y-auto primary_text_color">
+      {[1, 2, 3].map((item) => (
+        <div key={item} className="p-2 flex items-center gap-3 border-dashed border-b border-t-0 border-l-0 border-r-0 border last:border-none">
+          <Skeleton className="h-6 w-6 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
-      <div className="search_input_box w-full relative flex flex-col sm:flex-row items-center card_bg p-2 rounded-md mt-4 sm:mt-6 lg:mt-10 gap-4">
+      <div className="search_input_box w-full relative flex items-center card_bg p-2 rounded-md mt-4 sm:mt-6 lg:mt-10 gap-4">
         <div className="flex flex-1 items-center relative w-full">
           <IoLocationSharp size={20} className="description_color" />
           <input
             className="ml-2 focus:outline-none w-full text-sm sm:text-base bg-transparent"
             placeholder={t("enterLocation")}
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)} // Update search input
-            onKeyDown={handleKeyDown} // Handle keyboard events
+            onChange={handleInputChange} // Use the new handler
+            onKeyDown={handleKeyDown}
           />
-          {/* Dropdown of suggestions */}
-          {placeSuggestions.length > 0 && (
-            <div
-              className="absolute z-10 w-full top-10 card_bg rounded-b-xl shadow-lg max-h-60 overflow-y-auto primary_text_color"
-              style={{
-                scrollbarWidth: "none", // For Firefox
-                msOverflowStyle: "none", // For Internet Explorer and Edge
-              }}
-            >
-              {placeSuggestions.map((place, index) => (
+          {/* Dropdown of suggestions - Only show when we have input AND (loading OR suggestions) */}
+          {searchInput.trim() && (isLoading || placeSuggestions.length > 0) && (
+            <>
+              {isLoading ? (
+                <LocationSkeleton />
+              ) : (
                 <div
-                  key={place.place_id}
-                  className={`cursor-pointer p-2 flex items-center gap-3 border-dashed border-b border-t-0 border-l-0 border-r-0 border last:border-none ${
-                    index === activeIndex ? "primary_bg_color text-white" : ""
-                  }`}
-                  onClick={() => handlePlaceSelect(place)}
+                  className="absolute z-50 w-full top-8 card_bg rounded-b-xl shadow-lg max-h-60 overflow-hidden overflow-y-auto primary_text_color"
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
                 >
-                  <span>
-                    <IoLocationOutline size={22} />
-                  </span>
-                  <span>{place.description}</span>
+                  {placeSuggestions.length > 0 ? (
+                    placeSuggestions.map((place, index) => (
+                      <div
+                        key={place.place_id}
+                        className={`cursor-pointer p-2 flex items-center gap-3 border-dashed border-b border-t-0 border-l-0 border-r-0 border last:border-none ${
+                          index === activeIndex ? "primary_bg_color text-white" : ""
+                        }`}
+                        onClick={() => handlePlaceSelect(place)}
+                      >
+                        <span>
+                          <IoLocationOutline size={22} />
+                        </span>
+                        <span>{place.description}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center description_color">
+                      {t("noResultsFound")}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
-        <div className="flex-none flex sm:flex-row items-center justify-center gap-2 sm:gap-4 relative">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 relative">
           <button
             className="px-3 py-2 bg-transparent description_color hover:primary_text_color rounded-md flex items-center justify-center gap-2 text-sm sm:text-base"
             onClick={() => getCurrentLocation()}
           >
             <FaLocationCrosshairs size={18} />
-            <span>{t("locateMe")}</span>
+            <span className="hidden sm:block">{t("locateMe")}</span>
           </button>
           <button
-            className="px-3 py-2 primary_bg_color text-white rounded-md flex items-center justify-center gap-2 text-sm sm:text-base"
+            className="px-3 py-2 primary_bg_color text-white rounded-md flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSearchPlace}
+            disabled={!fullAddress.lat || !fullAddress.lng || !fullAddress.address}
           >
             <IoSearch size={18} />
-            <span>{t("search")}</span>
+            <span className="hidden sm:block">{t("search")}</span>
           </button>
         </div>
         {/* Modal */}

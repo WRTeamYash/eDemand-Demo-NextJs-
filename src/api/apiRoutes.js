@@ -1464,3 +1464,16 @@ export const getAllCategoriesApi = async () => {
     throw error; // Re-throw the error to handle it further up the call stack if needed
   }
 };
+
+
+// 46. get faqs api
+export const getFaqsApi = async () => {
+  try {
+    const response = await api.post(apiEndPoints.getFaqs);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in getFaqs:", error);
+    throw error;
+  }
+};

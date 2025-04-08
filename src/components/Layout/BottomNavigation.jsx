@@ -8,6 +8,7 @@ import { isLogin } from '@/utils/Helper'
 import EditProfileModal from '../auth/EditProfile'
 
 const BottomNavigation = () => {
+    
     const t = useTranslation();
     const router = useRouter();
     const isLoggedIn = isLogin();

@@ -521,5 +521,6 @@
   "profile":"Profile",
   "pleaseSelectService":"Please select service",
   "providerIsClosed":"Provider is closed",
-  "darkMode":"Dark Mode"
+  "darkMode":"Dark Mode",
+  "noResultsFound":"No results found"
 }

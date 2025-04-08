@@ -13,7 +13,7 @@ const ServiceCard = ({ data }) => {
                 className='w-[80px] h-[80px]' 
                 />
                 </div>
-                <div className="service_title font-bold text-base w-full">
+                <div className="service_title font-bold text-base w-1/2 text-center">
                     <span>
                         {data?.name}
                     </span>

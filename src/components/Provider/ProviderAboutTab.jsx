@@ -9,12 +9,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { GrLocation } from "react-icons/gr";
 import { useTranslation } from "../Layout/TranslationContext";
 import DOMPurify from "dompurify";
-
+import { useSelector } from "react-redux";
 
 const ProviderAboutTab = ({ providerData }) => {
   const t = useTranslation();
   const isDarkMode = useIsDarkMode();
-
+  const systemSettingsData = useSelector((state) => state.settingsData.settings);
+  const showMap = systemSettingsData?.general_settings?.provider_location_in_provider_details === "1";
+  console.log(showMap);
   const { isLoaded, loadError } = useGoogleMapsLoader();
 
   const days = [

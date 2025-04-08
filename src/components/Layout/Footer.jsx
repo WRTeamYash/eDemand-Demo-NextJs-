@@ -104,6 +104,14 @@ const Footer = () => {
               </li>
               <li className="text-base font-extralight">
                 <Link
+                  href="/faqs"
+                  className="text-white hover:border-b border_color transition-all duration-100"
+                >
+                  {t("faqs")}
+                </Link>
+              </li>
+              <li className="text-base font-extralight">
+                <Link
                   href="/terms-and-conditions"
                   className="text-white hover:border-b border_color transition-all duration-100"
                 >

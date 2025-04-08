@@ -1,22 +1,37 @@
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from '@/components/Layout/TranslationContext'
 import MiniLoader from '@/components/ReUseableComponents/MiniLoader'
-import React from 'react'
 import { FaPlus } from 'react-icons/fa'
 import { RiSendPlaneFill } from 'react-icons/ri'
 import noChat from '../../../assets/chat.svg'
 import CustomImageTag from '@/components/ReUseableComponents/CustomImageTag'
 import { useRTL } from '@/utils/Helper'
 
-const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, handleFileAttachment, message, handleMessageChange, MaxCharactersInTextMessage, handleSend, isSending, userData, renderMessage, selectedChatTab, renderFilePreview, chatList }) => {
+const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, handleFileAttachment, message, handleMessageChange, MaxCharactersInTextMessage, handleSend, isSending, userData, renderMessage, selectedChatTab, renderFilePreview, chatList, handleOpenLightbox, hasMore }) => {
 
     const t = useTranslation();
     const isRTL = useRTL();
+    const chatContentRef = useRef(null);
+
+    useEffect(() => {
+        // Auto scroll to bottom when chat is selected
+        if (chatContentRef.current) {
+            // Use direct DOM manipulation to scroll
+            const chatScreen = document.querySelector('.chat_messages_screen');
+            if (chatScreen) {
+                chatScreen.scrollTop = chatScreen.scrollHeight;
+            } else {
+                // Fallback for new design
+                chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
+            }
+        }
+    }, [selectedChatTab, chatMessages]);
 
     return (
         <div className='flex-1 flex flex-col'>
             {
                 selectedChatTab && Object.keys(selectedChatTab).length > 0 ? <>
-                    <div className='p-4 flex items-center border-b border-gray-300 gap-3'>
+                    <div className='hidden md:flex p-4 items-center border-b border-gray-300 gap-3'>
                         <CustomImageTag 
                         className='!h-10 !w-10 rounded-full object-cover' 
                         src={selectedChatTab?.image} 
@@ -36,7 +51,11 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
                             )}
                         </div>
                     </div>
-                    <div className='flex flex-col gap-3 p-4 overflow-auto h-[600px] chatsWrapper justify-start chat_messages_screen' onScroll={handleScroll}>
+                    <div 
+                        ref={chatContentRef}
+                        className='flex flex-col gap-3 p-4 overflow-auto h-[430px] md:h-[600px] chatsWrapper justify-start chat_messages_screen' 
+                        onScroll={handleScroll}
+                    >
                         {
                             isLoading ? <div className='h-full w-full flex items-center justify-center'>{t("loading")}</div> :
                                 chatMessages && chatMessages.length > 0 ? <div className='flex flex-col-reverse'>
@@ -78,7 +97,7 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
                         {
 
                             attachedFiles?.length > 0 &&
-                            <div className='absolute bg-gray-100 w-full overflow-x-auto p-2 bottom-[70px] selectedFiles mb-1'>
+                            <div className='absolute bg-gray-100 w-full overflow-x-auto p-2 bottom-[70px] selectedFiles mb-1 z-10'>
                                 <span>{t("selectedFiles")}</span>
                                 <div className='flex items-center gap-2 mt-2'>
                                     {attachedFiles.map((file, index) => renderFilePreview(file, index))}
@@ -94,10 +113,20 @@ const ProviderChat = ({ handleScroll, isLoading, chatMessages, attachedFiles, ha
                                 multiple
                             />
                             <button className='primary_bg_color rounded-full h-[30px] w-[30px] flex justify-center text-white items-center ' onClick={() => document.getElementById('file-attachment').click()}><FaPlus size={18} /></button>
-                            <input className='w-[56%] sm:w-[80%] xl:w-full border p-2 rounded-lg' type='text' value={message} onChange={handleMessageChange} placeholder={t("typeMessage")} />
+                            <textarea className='w-full sm:w-[80%] xl:w-full border p-2 rounded-lg resize-none overflow-hidden input-like' 
+                                    value={message} 
+                                    onChange={handleMessageChange} 
+                                    placeholder={t("typeMessage")} 
+                                    rows="1"
+                                    style={{
+                                        minHeight: "40px", 
+                                        maxHeight: "80px",
+                                        height: "40px"
+                                    }}
+                            />
                         </div>
                         <div className='h-full flex items-center justify-end col-span-2 gap-2'>
-                            <span className='text-gray-400'> {message.length}/{MaxCharactersInTextMessage}</span>
+                            <span className='hidden md:block text-gray-400'> {message.length}/{MaxCharactersInTextMessage}</span>
                             <button className={`primary_bg_color px-2 sm:px-4 h-full flex items-center text-center rounded-lg text-white ${isSending && 'cursor-not-allowed'}`}
                                 onClick={handleSend} disabled={isSending}>
                                 {

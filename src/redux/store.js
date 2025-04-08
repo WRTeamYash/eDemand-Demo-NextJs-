@@ -20,6 +20,7 @@ import helperReducer from "./reducers/helperSlice";
 import translationReducer from "./reducers/translationSlice";
 import reorderReducer from "./reducers/reorderSlice";
 import paymentReducer from "./reducers/paymentSlice";
+import chatUIReducer from './reducers/chatUISlice';
 // Custom storage implementation for Next.js
 const createNoopStorage = () => {
   return {
@@ -76,6 +77,7 @@ const rootReducer = combineReducers({
   translation: translationReducer,
   reorder: reorderReducer,
   payment: paymentReducer,
+  chatUI: chatUIReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -520,5 +520,6 @@
   "profile": "प्रोफ़ाइल",
   "pleaseSelectService": "कृपया सेवा चुनें",
   "providerIsClosed": "प्रदाता बंद है",
-  "darkMode": "डार्क मोड"
+  "darkMode": "डार्क मोड",
+  "noResultsFound": "कोई नतिजा नहीं मिला"
 }

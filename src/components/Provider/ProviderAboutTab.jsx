@@ -16,7 +16,6 @@ const ProviderAboutTab = ({ providerData }) => {
   const isDarkMode = useIsDarkMode();
   const systemSettingsData = useSelector((state) => state.settingsData.settings);
   const showMap = systemSettingsData?.general_settings?.provider_location_in_provider_details === "1";
-  console.log(showMap);
   const { isLoaded, loadError } = useGoogleMapsLoader();
 
   const days = [
@@ -147,7 +146,7 @@ const ProviderAboutTab = ({ providerData }) => {
       </div>
 
       {/* Contact Us */}
-      {providerData?.latitude &&
+      {showMap && providerData?.latitude &&
         providerData?.longitude &&
         providerData?.address && (
           <div>

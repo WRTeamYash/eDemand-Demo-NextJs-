@@ -4,10 +4,7 @@
 
     # Enable symlinks
     Options +FollowSymLinks
-    
-    ErrorDocument 200 "Hello. This is your .htaccess file talking."
-    RewriteRule ^ - [L,R=200]
-    
+
     # If the request is for a file that exists, serve it directly
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d

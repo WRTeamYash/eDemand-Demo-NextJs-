@@ -41,11 +41,14 @@ const ProviderPage = () => {
     <div><Loader /></div>
   ) : (
     <Layout>
+      {console.log(providerPageData)}
       <div className="py-10">
         {/* Hero Section */}
         {providerPageData?.hero_section?.status === 1 && (
           <ProfessionalServicesSection
             data={providerPageData?.hero_section}
+            happyCustomers={providerPageData?.happyCustomers}
+            totalRating={providerPageData?.rating}
             categoryData={providerPageData?.category_section?.categories}
           />
         )}

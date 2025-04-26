@@ -41,8 +41,7 @@ const ProviderPage = () => {
     <div><Loader /></div>
   ) : (
     <Layout>
-      {console.log(providerPageData)}
-      <div className="py-10">
+      <div>
         {/* Hero Section */}
         {providerPageData?.hero_section?.status === 1 && (
           <ProfessionalServicesSection

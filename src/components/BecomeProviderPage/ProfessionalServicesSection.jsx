@@ -24,35 +24,35 @@ const ProfessionalServicesSection = ({ data, categoryData, happyCustomers, total
   return (
     <>
       <style jsx>{`
-        .swiper-container {
+        .provider-swiper-container {
           width: 100%;
           height: 100%;
           border-radius: inherit;
           overflow: hidden;
         }
 
-        .swiper-slide {
+        .provider-swiper-slide {
           width: 100%;
           height: 100%;
           position: relative;
         }
 
-        :global(.swiper-slide) {
+        :global(.provider-services-swiper .swiper-slide) {
           opacity: 0;
           transition: opacity 1.5s ease-in-out;
         }
 
-        :global(.swiper-slide-active) {
+        :global(.provider-services-swiper .swiper-slide-active) {
           opacity: 1;
         }
 
-        :global(.swiper) {
+        :global(.provider-services-swiper) {
           width: 100%;
           height: 100%;
           border-radius: inherit;
         }
 
-        :global(.swiper-slide img) {
+        :global(.provider-services-swiper .swiper-slide img) {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -122,10 +122,10 @@ const ProfessionalServicesSection = ({ data, categoryData, happyCustomers, total
                     }}
                     speed={1500}
                     loop={true}
-                    className="swiper-container"
+                    className="provider-services-swiper"
                   >
                     {data?.images?.map((ele, index) => (
-                      <SwiperSlide key={index}>
+                      <SwiperSlide key={index} className="provider-swiper-slide">
                         <CustomImageTag
                           src={ele?.image}
                           alt={`service-${index}`}

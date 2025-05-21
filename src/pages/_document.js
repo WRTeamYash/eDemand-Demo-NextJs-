@@ -12,6 +12,23 @@ export default function Document({ favicon }) {
 
         <link rel="icon" href={favicon ? favicon : '/favicon'} sizes="32x32" type="image/png" />
         <script async defer src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_PLACE_API_KEY}&libraries=places&loading=async`}></script>
+        
+        {/* Site Behaviour Tracking Script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var sbSiteSecret = '581c62ee-1ee8-4b0c-a613-c9007ff98397';
+                window.sitebehaviourTrackingSecret = sbSiteSecret;
+                var scriptElement = document.createElement('script');
+                scriptElement.async = true;
+                scriptElement.id = 'site-behaviour-script-v2';
+                scriptElement.src = 'https://sitebehaviour-cdn.fra1.cdn.digitaloceanspaces.com/index.min.js?sitebehaviour-secret=' + sbSiteSecret;
+                document.head.appendChild(scriptElement); 
+              })();
+            `
+          }}
+        />
       </Head>
       <body className="!pointer-events-auto">
         <Main />

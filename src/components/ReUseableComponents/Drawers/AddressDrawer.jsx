@@ -284,17 +284,17 @@ const AddressDrawer = ({
     <Drawer open={open} onClose={handleClose} closeOnClickOutside={false}>
       <DrawerContent
         className={cn(
-          "max-w-full lg:max-w-7xl mx-auto rounded-tr-[18px]",
-          "max-h-full lg:max-h-fit overflow-y-auto lg:overflow-hidden",
+          "max-w-full md:max-w-[90%] lg:max-w-[85%] xl:max-w-7xl mx-auto rounded-tr-[18px] rounded-tl-[18px]",
+          "overflow-y-auto",
           "transition-all duration-300",
           "after:!content-none"
         )}
       >
-        <div className="address w-full flex flex-col lg:flex-row gap-8 py-4 lg:py-16 px-4 lg:px-12 overflow-y-auto h-fit max-h-fit transition-all duration-300">
+        <div className="address w-full flex flex-col lg:flex-row gap-6 py-4 px-4 md:p-6 lg:p-8 xl:p-10">
           {/* Left side: Map */}
-          <div className="w-full">
+          <div className="w-full lg:w-1/2">
             <div className="schedule_cal w-full">
-              <div className="w-full rounded-lg overflow-hidden  h-[600px]">
+              <div className="w-full rounded-lg overflow-hidden h-[300px] md:h-[350px] lg:h-[450px]">
                 {isLoaded ? (
                   <>
                     <Map
@@ -314,14 +314,14 @@ const AddressDrawer = ({
           </div>
 
           {/* Right side: Address fields */}
-          <div className="w-full flex flex-col gap-6">
+          <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
             <div className="flex items-center justify-between w-full">
-              <h2 className="text-2xl font-bold mb-4">
+              <h2 className="text-xl md:text-2xl font-bold">
                 {isClicked ? t("addNewAddress") : t("selectAddress")}
               </h2>
               <button
                 onClick={handleButtonClick}
-                className="flex items-center gap-2 light_bg_color primary_text_color px-4 py-1 rounded-lg text-base font-normal"
+                className="flex items-center gap-2 light_bg_color primary_text_color px-3 py-1 md:px-4 md:py-1 rounded-lg text-sm md:text-base font-normal"
               >
                 <span>{t("addAddress")}</span>
                 <span
@@ -329,31 +329,31 @@ const AddressDrawer = ({
                     isClicked ? "rotate-45" : "rotate-0"
                   }`}
                 >
-                  <BsPlusLg size={22} />
+                  <BsPlusLg size={18} />
                 </span>
               </button>
             </div>
 
-            <div className="address_div w-full max-w-[650px]">
+            <div className="address_div w-full">
               <Swiper
-                spaceBetween={20}
-                slidesPerView={2.2}
+                spaceBetween={10}
+                slidesPerView="auto"
                 modules={[FreeMode]}
                 freeMode={true}
                 key={isRTL}
                 dir={isRTL ? "rtl" : "ltr"}
-                breakpoints={breakpoints}
+                className="!pb-2"
               >
                 {addresses.map((address, index) => (
-                  <SwiperSlide key={address.id}>
+                  <SwiperSlide key={address.id} className="!w-auto min-w-[180px] max-w-[250px]">
                     <div
                       onClick={() => handleSelectAddress(address)}
-                      className={`p-4 border ${
+                      className={`p-3 border ${
                         activeAddress?.id === address.id ? "border_color" : ""
                       } flex flex-col gap-2 items-start rounded-xl cursor-pointer`}
                     >
                       <div
-                        className={`text-base flex items-center justify-between ${
+                        className={`text-sm md:text-base flex items-center justify-between ${
                           activeAddress?.id === address.id
                             ? "primary_text_color"
                             : "description_color"
@@ -361,10 +361,10 @@ const AddressDrawer = ({
                       >
                         <span>{address.type}</span>
                         {activeAddress?.id === address.id && (
-                          <IoCheckmark size={20} />
+                          <IoCheckmark size={16} />
                         )}
                       </div>
-                      <div className="text-lg font-medium line-clamp-1">
+                      <div className="text-base font-medium line-clamp-1">
                         {address.city_name || address.city}
                       </div>
                     </div>
@@ -373,7 +373,7 @@ const AddressDrawer = ({
               </Swiper>
             </div>
 
-            <div className="address_fields flex flex-col gap-4">
+            <div className="address_fields flex flex-col gap-3 md:gap-4">
               {["address", "area", "city", "mobile"].map((field) => (
                 <input
                   key={field}
@@ -389,16 +389,16 @@ const AddressDrawer = ({
                       mobile: t("mobile"),
                     }[field]
                   }
-                  className="w-full p-4 border background_color rounded-lg transition-all duration-300 focus:outline-none focus:border_color focus:light_bg_color focus:primary_text_color"
+                  className="w-full p-3 border background_color rounded-lg transition-all duration-300 focus:outline-none focus:border_color focus:light_bg_color focus:primary_text_color"
                 />
               ))}
 
-              <div className="types flex items-center gap-[18px]">
+              <div className="types flex items-center gap-2 flex-wrap">
                 {addressTypes.map((type) => (
                   <button
                     key={type}
                     onClick={() => handleTypeChange(type)}
-                    className={`py-2 px-4 border rounded-lg transition-colors ${
+                    className={`py-1 px-3 border rounded-lg transition-colors ${
                       formValues.type === type
                         ? "light_bg_color primary_text_color border_color"
                         : "background_color"
@@ -414,23 +414,23 @@ const AddressDrawer = ({
                   id="setDefaultAddress"
                   checked={formValues.is_default}
                   onChange={handleSetDefaultAddress}
-                  className="form-checkbox h-5 w-5 !bg-black border-gray-300 rounded focus:ring-primary_color"
+                  className="form-checkbox h-4 w-4 !bg-black border-gray-300 rounded focus:ring-primary_color"
                 />
                 <label
                   htmlFor="setDefaultAddress"
-                  className="text-sm font-medium"
+                  className="text-xs md:text-sm font-medium"
                 >
                   {t("setDefaultAddress")}
                 </label>
               </div>
-              <div className="submit_address mt-2">
+              <div className="submit_address mt-1 md:mt-2 mb-2">
                 {isLoading ? (
                   <button className="primary_bg_color primary_text_color py-3 px-8 rounded-xl w-full flex items-center justify-center">
                     <MiniLoader />
                   </button>
                 ) : (
                   <button
-                    className="w-full primary_bg_color text-white p-4 rounded-xl text-base font-normal"
+                    className="w-full primary_bg_color text-white p-3 rounded-xl text-sm md:text-base font-normal"
                     onClick={handleSaveAddress}
                   >
                     {t("continue")}

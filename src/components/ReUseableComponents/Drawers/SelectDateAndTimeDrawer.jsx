@@ -170,17 +170,18 @@ const SelectDateAndTimeDrawer = ({
     <Drawer open={open} onClose={handleClose} modal>
       <DrawerContent
         className={cn(
-          "max-w-full lg:max-w-7xl mx-auto rounded-tr-[18px]",
-          "max-h-[90%] lg:max-h-fit overflow-y-auto lg:overflow-hidden [&_::-webkit-calendar-picker-indicator]:z-[60]",
+          "max-w-full md:max-w-[90%] lg:max-w-[85%] xl:max-w-7xl mx-auto rounded-tr-[18px] rounded-tl-[18px]",
+          "overflow-y-auto",
+          "transition-all duration-300",
           "after:!content-none"
         )}
       >
         <DrawerTitle className="hidden"></DrawerTitle>
-        <div className="select_date flex flex-col lg:flex-row gap-8 py-4 lg:py-16 px-4 lg:px-12 overflow-y-auto h-fit max-h-fit">
+        <div className="select_date flex flex-col lg:flex-row gap-6 py-4 px-4 md:p-6 lg:p-8">
           {/* Left side: Calendar */}
-          <div className="w-full">
-            <h2 className="text-2xl font-bold mb-4">{t("schedule")}</h2>
-            <div className="schedule_cal w-full border rounded-2xl p-3">
+          <div className="w-full lg:w-1/2">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{t("schedule")}</h2>
+            <div className="schedule_cal w-full border rounded-xl md:rounded-2xl p-2 md:p-3">
               <Calendar
                 mode="single"
                 selected={selectedDate.toDate()} // Convert dayjs object to Date for the Calendar
@@ -190,78 +191,77 @@ const SelectDateAndTimeDrawer = ({
                   before: new Date(), // Disable past dates
                   after: dayjs().add(bookingDays - 1, "day").toDate(), // Disable dates beyond booking days
                 }}
+                className="w-full"
               />
             </div>
           </div>
 
           {/* Right side: Time Slots */}
-          <div className="w-full">
-            <div className="w-full">
-              <h2 className="text-2xl font-bold mb-4">
-                {t("selectTimeSlot")}{" "}
-              </h2>
-              <div className="flex flex-col gap-6">
-                {timeSlots?.length > 0 ? (
-                  <>
-                    <div className="time_slots grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-2 lg:max-h-[400px] overflow-y-auto">
-                      {timeSlots?.map((timeSlot) => (
-                        <button
-                          key={timeSlot.time}
-                          className={cn(
-                            "px-4 py-3 flex flex-col gap-2 rounded-lg border card_bg",
-                            selectedTimeSlot === timeSlot.time
-                              ? "primary_text_color border_color selected_shadow"
-                              : "description_color",
-                            timeSlot.is_available === 0 &&
-                            "opacity-50 cursor-not-allowed !background_color"
-                          )}
-                          onClick={() =>
-                            timeSlot.is_available === 1 &&
-                            handleTimeSlotSelect(timeSlot.time)
-                          }
-                          disabled={timeSlot.is_available === 0}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="text-base font-normal">
-                              {dayjs(
-                                new Date(`1970-01-01T${timeSlot.time}`)
-                              ).format("h:mm A")}
+          <div className="w-full lg:w-1/2">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
+              {t("selectTimeSlot")}
+            </h2>
+            <div className="flex flex-col gap-4 md:gap-5">
+              {timeSlots?.length > 0 ? (
+                <>
+                  <div className="time_slots grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 mb-2 max-h-[300px] md:max-h-[350px] overflow-y-auto pr-1">
+                    {timeSlots?.map((timeSlot) => (
+                      <button
+                        key={timeSlot.time}
+                        className={cn(
+                          "px-3 py-2 md:px-4 md:py-3 flex flex-col gap-1 rounded-lg border card_bg",
+                          selectedTimeSlot === timeSlot.time
+                            ? "primary_text_color border_color selected_shadow"
+                            : "description_color",
+                          timeSlot.is_available === 0 &&
+                          "opacity-50 cursor-not-allowed !background_color"
+                        )}
+                        onClick={() =>
+                          timeSlot.is_available === 1 &&
+                          handleTimeSlotSelect(timeSlot.time)
+                        }
+                        disabled={timeSlot.is_available === 0}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-sm md:text-base font-normal">
+                            {dayjs(
+                              new Date(`1970-01-01T${timeSlot.time}`)
+                            ).format("h:mm A")}
+                          </span>
+                          {selectedTimeSlot === timeSlot.time && (
+                            <span className="primary_text_color">
+                              <FaCheck size={14} />
                             </span>
-                            {selectedTimeSlot === timeSlot.time && (
-                              <span className="primary_text_color">
-                                <FaCheck />
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="p-3 flex items-center justify-between w-full light_bg_color border_color primary_text_color rounded-lg">
-                      <CustomTimePicker
-                        value={customTime}
-                        setSelectedTimeSlot={setSelectedTimeSlot}
-                        onChange={(time) => {
-                          const formattedTime = dayjs(time).format("HH:mm-00"); // Format time to 24-hour format
-                          setCustomTime(time);
-                        }}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full h-[500px] flex items-center justify-center">
-                    <p className="text-center text-sm text-gray-500">
-                      {t("providerIsClosed")}
-                    </p>
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                )}
-                <div className="continue flex items-center">
-                  <button
-                    className="primary_bg_color text-white rounded-lg p-3 w-full"
-                    onClick={handleSchedule}
-                  >
-                    {t("continue")}
-                  </button>
+                  <div className="p-2 md:p-3 flex items-center justify-between w-full light_bg_color border_color primary_text_color rounded-lg">
+                    <CustomTimePicker
+                      value={customTime}
+                      setSelectedTimeSlot={setSelectedTimeSlot}
+                      onChange={(time) => {
+                        const formattedTime = dayjs(time).format("HH:mm-00"); // Format time to 24-hour format
+                        setCustomTime(time);
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-[250px] md:h-[350px] flex items-center justify-center">
+                  <p className="text-center text-sm text-gray-500">
+                    {t("providerIsClosed")}
+                  </p>
                 </div>
+              )}
+              <div className="continue flex items-center mb-2">
+                <button
+                  className="primary_bg_color text-white rounded-lg p-3 w-full"
+                  onClick={handleSchedule}
+                >
+                  {t("continue")}
+                </button>
               </div>
             </div>
           </div>

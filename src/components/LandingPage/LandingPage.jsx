@@ -16,9 +16,14 @@ import config from "@/utils/Langconfig";
 import { setLanguage } from "@/utils/Helper";
 import SomethingWentWrong from "../ReUseableComponents/Error/SomethingWentWrong";
 import MaintenanceMode from "../ReUseableComponents/Error/MaintanceMode";
+import { useRouter } from "next/navigation";
+
 
 const LandingPage = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
+
+  const locationData = useSelector(state => state.location);
   
   const currentLanguage = useSelector(
     (state) => state.translation.currentLanguage
@@ -80,6 +85,17 @@ const LandingPage = () => {
     fetchSettings();
   }, []);
 
+  const checkLocationAvailable = () => {
+    if(locationData?.lat && locationData?.lng) {
+      return true;
+    }
+    return false;
+  }
+  useEffect(() => {
+    if(checkLocationAvailable()) {
+      router.push("/");
+    }
+  }, [locationData]);
   if (isLoading) {
     return <Loader />;
   }

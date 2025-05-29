@@ -51,6 +51,19 @@ const ProviderSubscription = ({ data }) => {
     },
   };
 
+    // Calculate the number of subscription plans, default to 0 if undefined/null
+    const planCount = data?.subscriptions?.length || 0;
+
+    // Determine the base slidesPerView dynamically
+    // If the number of plans is less than 3.5, use the plan count.
+    // Otherwise, use the default 3.5. This prevents layout issues when few plans exist.
+    const baseSlidesPerView = planCount < 3.5 ? planCount : 3.5;
+  
+    // Disable loop if there are not enough slides to loop meaningfully (less than slidesPerView)
+  // Note: We compare against the *base* slidesPerView here for simplicity.
+  // A more complex logic could check against breakpoint values too.
+  const enableLoop = planCount >= baseSlidesPerView;
+
   return (
     <section id="provider_subscription" className="relative">
       <div className="subscription_details_header relative bg-black h-[405px]">
@@ -95,7 +108,7 @@ const ProviderSubscription = ({ data }) => {
             <div className="flex justify-center mx-auto h-auto sm:h-[600px]">
               <Swiper
                 spaceBetween={20} // Space between slides
-                slidesPerView={3.5}
+                slidesPerView={baseSlidesPerView}
                 breakpoints={breakpoints}
                 dir={isRTL ? "rtl" : "ltr"}
                 key={isRTL}
@@ -107,7 +120,7 @@ const ProviderSubscription = ({ data }) => {
                   delay: 2500,
                   disableOnInteraction: false,
                 }}
-                loop={true}
+                loop={enableLoop}
                 className="custom-swiper"
               >
                 {data?.subscriptions?.map((plan, index) => (

@@ -107,7 +107,7 @@ const AllProviders = () => {
 
   return (
     <Layout>
-      <BreadCrumb firstEle={"Providers"} firstEleLink={"/providers"} />
+      <BreadCrumb firstEle={t("providers")} firstEleLink={"/providers"} />
 
       <section className="all-providers">
         <div className="commanSec mt-12 flex flex-col items-start justify-center gap-6 w-full container mx-auto">

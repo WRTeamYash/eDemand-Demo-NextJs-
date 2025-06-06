@@ -14,7 +14,7 @@ export default function Document({ favicon }) {
         <script async defer src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_PLACE_API_KEY}&libraries=places&loading=async`}></script>
         
         {/* Site Behaviour Tracking Script */}
-        <script
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -28,7 +28,7 @@ export default function Document({ favicon }) {
               })();
             `
           }}
-        />
+        /> */}
       </Head>
       <body className="!pointer-events-auto">
         <Main />

@@ -10,7 +10,7 @@ import {
   setLatitude,
   setLongitude,
 } from "@/redux/reducers/locationSlice";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { providerAvailableApi } from "@/api/apiRoutes";
 import { useTranslation } from "../Layout/TranslationContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
@@ -64,12 +64,12 @@ const LocationModal = ({ open, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl p-6 card_bg rounded-lg">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl sm:text-2xl font-bold">
             {t("selectAddress")}
           </DialogTitle>
           <DialogClose asChild>
-            <Button variant="ghost" className="absolute right-4 top-4">
+            <Button variant="ghost" className="">
               <MdClose size={20}/>
             </Button>
           </DialogClose>

@@ -23,7 +23,14 @@ const NotificationCard = ({ data }) => {
       </div>
       {/* Time */}
       <div className="description_color text-sm whitespace-nowrap">
-        {data?.duration}
+        {data?.date_sent ? (
+          // Format date in DD-MM-YYYY
+          new Date(data?.date_sent).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+        ) : '-'}
       </div>
     </div>
   );
